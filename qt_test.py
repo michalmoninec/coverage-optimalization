@@ -117,6 +117,10 @@ class Window(QWidget):
             self.changeArea = PushButton('default kokocina')
             self.layout().addWidget(self.changeArea)
 
+        self.b4 = QtWidgets.QPushButton(self)
+        self.b4.setText("Choose file with everything")
+        self.b4.clicked.connect(self.set_complete_file)
+
         self.show()
 
 
@@ -133,9 +137,9 @@ class Window(QWidget):
         # self.b3.setText("Clear all")
         # self.b3.clicked.connect(self.clear_graph)
 
-        # self.b4 = QtWidgets.QPushButton(self)
-        # self.b4.setText("Choose file with everything")
-        # self.b4.clicked.connect(self.set_complete_file)
+        self.b4 = QtWidgets.QPushButton(self)
+        self.b4.setText("Choose file with everything")
+        self.b4.clicked.connect(self.set_complete_file)
 
         # self.b5 = QtWidgets.QPushButton(self)
         # self.b5.setText('button shouldnt be here')
