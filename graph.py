@@ -14,32 +14,35 @@ class Coordinates():
         super().__init__()
         self.x = x
         self.y = y
+
     def clear(self):
         self.x = None
         self.y = None
 
+
 def get_closed_loops(data):
     endpoints = []
-    split_coords= []
+    split_coords = []
     split_indexes = [-1]
     separated_loops = []
     for element in data:
-        if data.count(element)>1:
+        if data.count(element) > 1:
             endpoints.append(element)
     # print(f'endpoint are: {endpoints}')
     if endpoints:
-        unique_endpoints=set(endpoints)
+        unique_endpoints = set(endpoints)
         for item in unique_endpoints:
             split_coords.append(item)
     # print(split_coords)
     if split_coords:
-        for i in range (len(split_coords)):
+        for i in range(len(split_coords)):
             index = len(data) - 1 - data[::-1].index(split_coords[i])
             split_indexes.append(index)
     print(split_indexes)
     print(f'Cele data: {data}')
-    for i in range (len(split_indexes)-1):
-        separated_loops.append(data[split_indexes[i]+1:split_indexes[i+1]+1])
+    for i in range(len(split_indexes)-1):
+        separated_loops.append(
+            data[split_indexes[i]+1:split_indexes[i+1]+1])
     print(f'Separovane smycky: {separated_loops}')
     return separated_loops
 
@@ -67,7 +70,6 @@ class GraphData():
 
         coor_x = []
         coor_y = []
-        
 
         for i in range(len(new_coor)):
             c = new_coor[i].split(',')
@@ -89,29 +91,28 @@ class GraphData():
 
         # for i in range (len(x)):
         #     self.coors.append(Coordinates(x[i],y[i]))
-        
 
-    def check_closed_loop(self,x, y):
+    def check_closed_loop(self, x, y):
         closed_loop = []
-        
-        for i in range (len(x)):
-            if [x[i],y[i]] in closed_loop:
-                closed_loop.append([x[i],y[i]])
+
+        for i in range(len(x)):
+            if [x[i], y[i]] in closed_loop:
+                closed_loop.append([x[i], y[i]])
                 print(closed_loop)
                 return closed_loop
             else:
-                closed_loop.append([x[i],y[i]])
+                closed_loop.append([x[i], y[i]])
         return None
-        
+
     def check_inner_validity(self):
         outer_set = []
         inner_set = []
-        for i in range (len(self.border_outer.x)):
-            outer_set.append((self.border_outer.x[i],self.border_outer.y[i]))
+        for i in range(len(self.border_outer.x)):
+            outer_set.append((self.border_outer.x[i], self.border_outer.y[i]))
 
-        for i in range (len(self.coords.x)):
-            inner_set.append((self.coords.x[i],self.coords.y[i]))
-        
+        for i in range(len(self.coords.x)):
+            inner_set.append((self.coords.x[i], self.coords.y[i]))
+
         outer_polygon = Polygon(outer_set)
         inner_polygon = Polygon(inner_set)
 
@@ -122,24 +123,25 @@ class GraphData():
 
     def get_outer_inner(self):
         whole_set = []
-        for i in range (len(self.coords.x)):
-            whole_set.append((self.coords.x[i],self.coords.y[i]))
+        for i in range(len(self.coords.x)):
+            whole_set.append((self.coords.x[i], self.coords.y[i]))
         closed_loops = get_closed_loops(whole_set)
         print(closed_loops[0][0])
 
         outer_x = []
         outer_y = []
+
         inner_x = []
         inner_y = []
-        for i in range (len(closed_loops[0])):
+
+        for i in range(len(closed_loops[0])):
             coords = closed_loops[0][i]
             outer_x.append(coords[0])
             outer_y.append(coords[1])
         self.border_outer.x = outer_x
         self.border_outer.y = outer_y
 
-
-        for i in range (len(closed_loops[1])):
+        for i in range(len(closed_loops[1])):
             coords = closed_loops[1][i]
             inner_x.append(coords[0])
             inner_y.append(coords[1])
