@@ -37,6 +37,8 @@ def get_closed_loops(data):
             index = len(data) - 1 - data[::-1].index(split_coords[i])
             split_indexes.append(index)
     print(split_indexes)
+    split_indexes = sorted(split_indexes)
+    print(f'sorted indexes: {split_indexes}')
     print(f'Cele data: {data}')
     for i in range (len(split_indexes)-1):
         separated_loops.append(data[split_indexes[i]+1:split_indexes[i+1]+1])
@@ -114,6 +116,10 @@ class GraphData():
         
         outer_polygon = Polygon(outer_set)
         inner_polygon = Polygon(inner_set)
+
+        x, y = outer_polygon.exterior.coords.xy
+        print(f'X coords> {x}')
+        print(f'Y coords> {y}')
 
         if outer_polygon.contains(inner_polygon):
             return True

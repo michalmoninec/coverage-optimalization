@@ -43,15 +43,18 @@ class InputSingleFile(QWidget):
     def __init__(self, parent=None):
         super(InputSingleFile, self).__init__(parent)
         layout = QHBoxLayout()
-        layout.addWidget(PushButton('Choose file'))
+        self.selectFile = PushButton('Choose file')
+        layout.addWidget(self.selectFile)
         self.setLayout(layout)
 
 class InputSeparatedFiles(QWidget):
     def __init__(self, parent=None):
         super(InputSeparatedFiles, self).__init__(parent)
         layout = QHBoxLayout()
-        layout.addWidget(PushButton('Choose file'))
-        layout.addWidget(PushButton('Choose file'))
+        self.selectOuter = PushButton('Choose outer')
+        self.selectInner = PushButton('Choose inner')
+        layout.addWidget(self.selectOuter)
+        layout.addWidget(self.selectInner)
         self.setLayout(layout)
 
 class Window(QWidget):
@@ -74,19 +77,20 @@ class Window(QWidget):
         navbar = QHBoxLayout()
         navbar2 = QHBoxLayout()
 
-        navbar.addWidget(PushButton('button 1'))
-        navbar.addWidget(PushButton('button 2'))
-
-        navbar2.addWidget(PushButton('button 3'))
-        navbar2.addWidget(PushButton('button 4'))
-
-
         self.inputMethod = InputMethod()
         self.inputMethod.rb_one_file.toggled.connect(self.tryPrint)
 
         self.inputFile = QStackedLayout()
+
         self.inputSingleFile = InputSingleFile()
+        self.inputSingleFile.selectFile.clicked.connect(self.set_complete_file)
+
         self.inputSeparatedFiles = InputSeparatedFiles()
+        self.inputSeparatedFiles.selectOuter.clicked.connect(self.button_clicked_outer)
+        self.inputSeparatedFiles.selectInner.clicked.connect(self.button_clicked_inner)
+
+
+
         self.inputFile.addWidget(self.inputSingleFile)
         self.inputFile.addWidget(self.inputSeparatedFiles)
 
@@ -113,13 +117,13 @@ class Window(QWidget):
         self.setLayout(layout)
         self.set_location()
 
-        if self.inputMethod.rb_one_file.selected:
-            self.changeArea = PushButton('default kokocina')
-            self.layout().addWidget(self.changeArea)
+        # if self.inputMethod.rb_one_file.selected:
+        #     self.changeArea = PushButton('default kokocina')
+        #     self.layout().addWidget(self.changeArea)
 
-        self.b4 = QtWidgets.QPushButton(self)
-        self.b4.setText("Choose file with everything")
-        self.b4.clicked.connect(self.set_complete_file)
+        # self.b4 = QtWidgets.QPushButton(self)
+        # self.b4.setText("Choose file with everything")
+        # self.b4.clicked.connect(self.set_complete_file)
 
         self.show()
 
@@ -137,9 +141,9 @@ class Window(QWidget):
         # self.b3.setText("Clear all")
         # self.b3.clicked.connect(self.clear_graph)
 
-        self.b4 = QtWidgets.QPushButton(self)
-        self.b4.setText("Choose file with everything")
-        self.b4.clicked.connect(self.set_complete_file)
+        # self.b4 = QtWidgets.QPushButton(self)
+        # self.b4.setText("Choose file with everything")
+        # self.b4.clicked.connect(self.set_complete_file)
 
         # self.b5 = QtWidgets.QPushButton(self)
         # self.b5.setText('button shouldnt be here')
