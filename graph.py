@@ -8,7 +8,7 @@ import numpy as np
 import math
 from shapely.geometry import Polygon
 
- 
+#dump this after changing data types of outer, inner
 class Coordinates():
     def __init__(self, x, y):
         super().__init__()
@@ -18,34 +18,34 @@ class Coordinates():
         self.x = None
         self.y = None
 
+#change as class function to GraphData
 def get_closed_loops(data):
     endpoints = []
     split_coords= []
     split_indexes = [-1]
     separated_loops = []
+
     for element in data:
         if data.count(element)>1:
             endpoints.append(element)
-    # print(f'endpoint are: {endpoints}')
+
     if endpoints:
         unique_endpoints=set(endpoints)
         for item in unique_endpoints:
             split_coords.append(item)
-    # print(split_coords)
+
     if split_coords:
         for i in range (len(split_coords)):
             index = len(data) - 1 - data[::-1].index(split_coords[i])
             split_indexes.append(index)
-    # print(split_indexes)
     split_indexes = sorted(split_indexes)
-    # print(f'sorted indexes: {split_indexes}')
-    # print(f'Cele data: {data}')
+
     for i in range (len(split_indexes)-1):
         separated_loops.append(data[split_indexes[i]+1:split_indexes[i+1]+1])
-    # print(f'Separovane smycky: {separated_loops}')
     return separated_loops
 
-
+#fix outer, inner data structures
+#coords - make whole array of points [(x,y),(x,y)]
 class GraphData():
     def __init__(self, file_name):
         super().__init__()
@@ -57,23 +57,19 @@ class GraphData():
         self.inner = []
         self.outer = []
         self.border_outer_complete = []
-        # self.coors = []
         self.file_name = file_name
 
-        # self.set_coords(file_name)
-
+    #handle different type of KML files
     def set_coords(self, file_name):
         with open(file_name) as f:
             doc = parser.parse(f).getroot()
 
         # coor = doc.Document.Placemark.LineString.coordinates.text
         coor = doc.Document.Folder.Placemark.LineString.coordinates.text
-
         new_coor = re.findall('[0-9.0-9,0-9.0-9,0-9.0-9]+', coor)
 
         coor_x = []
         coor_y = []
-        
 
         for i in range(len(new_coor)):
             c = new_coor[i].split(',')
@@ -83,35 +79,29 @@ class GraphData():
         x, y, zn, zl = utm.from_latlon(
             np.array(coor_x[:]), np.array(coor_y[:]))
 
-        # min_x = min(x)
-        # min_y = min(y)
-
-        # x = [m - min_x for m in x]
-        # y = [m - min_y for m in y]
-
         self.file_name = file_name
+
+        #TODO handle coordinates apropriately
         self.coords.x = x
         self.coords.y = y
 
-        # for i in range (len(x)):
-        #     self.coors.append(Coordinates(x[i],y[i]))
-        
-
+    #hardcoded, try some sofisticated way
     def check_closed_loop(self,x, y):
         closed_loop = []
         
         for i in range (len(x)):
             if [x[i],y[i]] in closed_loop:
                 closed_loop.append([x[i],y[i]])
-                # print(closed_loop)
                 return closed_loop
             else:
                 closed_loop.append([x[i],y[i]])
         return None
         
+    #bad data types, switch to array of points instead
     def check_inner_validity(self):
         outer_set = []
         inner_set = []
+
         for i in range (len(self.border_outer.x)):
             outer_set.append((self.border_outer.x[i],self.border_outer.y[i]))
 
@@ -122,23 +112,19 @@ class GraphData():
         inner_polygon = Polygon(inner_set)
 
         x, y = outer_polygon.exterior.coords.xy
-        # print(f'X coords> {x}')
-        # print(f'Y coords> {y}')
 
         if outer_polygon.contains(inner_polygon):
             return True
         else:
             return False
 
+    #handle outer border properly, HARDCODED af
     def get_outer_inner(self):
         whole_set = []
+
         for i in range (len(self.coords.x)):
             whole_set.append((self.coords.x[i],self.coords.y[i]))
         closed_loops = get_closed_loops(whole_set)
-        # print(closed_loops[0][0])
-        # print(f"closed loops: {len(closed_loops)}")
-        # print(f"closed loops: {closed_loops}")
-        
 
         outer_x = []
         outer_y = []
@@ -162,4 +148,3 @@ class GraphData():
             self.inner.append(Coordinates(inner_x,inner_y))
             inner_y = []
             inner_x = []
-

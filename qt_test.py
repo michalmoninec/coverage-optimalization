@@ -14,10 +14,6 @@ from copy import deepcopy
 class PushButton(QtGui.QPushButton):
     def __init__(self, parent=None):
       super(PushButton, self).__init__(parent)
-      
-      
-      
-    #   self.clicked.connect(self.deleteLater)
 
 class RadioButton(QtGui.QRadioButton):
     def __init__(self,parent=None):
@@ -27,8 +23,6 @@ class RadioButton(QtGui.QRadioButton):
 
     def button_toggled(self, selected):
         self.selected = selected
-        # print(self.selected)
-
 
 class InputMethod(QtGui.QHBoxLayout):
     def __init__(self, parent=None):
@@ -64,13 +58,10 @@ class Window(QWidget):
         super().__init__()
         self.initUI()
 
-
     def initUI(self):
-
         self.graph_data = GraphData(None)
-
         title = 'Foking automower'
-
+        
         self.setWindowTitle(title)
         self.setGeometry(0, 0, 800, 400)
         self.setWindowIcon(QIcon('icon.png'))
@@ -91,49 +82,37 @@ class Window(QWidget):
         self.inputSeparatedFiles.selectOuter.clicked.connect(self.button_clicked_outer)
         self.inputSeparatedFiles.selectInner.clicked.connect(self.button_clicked_inner)
 
-
-
         self.inputFile.addWidget(self.inputSingleFile)
         self.inputFile.addWidget(self.inputSeparatedFiles)
-
-        # self.inputFileLayout = QHBoxLayout()
-        # self.inputFileLayout.addWidget(self.inputFile)
-
 
         self.graphWidget = pg.PlotWidget()
         self.graphWidget.setAspectLocked()
         self.graphWidget.getPlotItem().hideAxis('bottom')
         self.graphWidget.getPlotItem().hideAxis('left')
 
-        
-
         layout.addLayout(self.inputMethod)
         layout.addLayout(self.inputFile)
-        # layout.addStretch(1)
         layout.addWidget(self.graphWidget)
         layout.addLayout(navbar)
         layout.addLayout(navbar2)
 
-        
-       
         self.setLayout(layout)
         self.set_location()
 
         self.show()
 
-
+    #looks good
     def tryPrint(self):
         if self.inputMethod.rb_one_file.selected:
             self.inputFile.setCurrentWidget(self.inputSingleFile)
         else:
             self.inputFile.setCurrentWidget(self.inputSeparatedFiles)
 
+    #not used
     def create_button(self):
         pass
-        # self.layout().children()[0].addWidget(PushButton())
-        # print(self.layout().children()[0].objectName())
-        # self.b2.setText('changetext mothefucka')
 
+    #not used
     def clear_graph(self):
         self.graphWidget.clear()
         self.graph_data.coords.clear()
@@ -142,6 +121,7 @@ class Window(QWidget):
         self.b1.setEnabled(True)
         self.b2.setEnabled(False)
 
+    #add consequencecy logic to select outer at first
     def button_clicked_outer(self):
         if (self.get_graph_data()):
             coors = self.graph_data.coords
@@ -159,9 +139,10 @@ class Window(QWidget):
                 msg.setIcon(QMessageBox.Information)
                 msg.exec_()
 
+    #change outer, inner - after graph validity check
     def button_clicked_inner(self): 
         if (self.get_graph_data()):
-            #kontrola jestli je smyčka uvnitř vnejsi smycky
+            #inner polygon check
             if(self.graph_data.check_inner_validity()):
                 self.plot(self.graph_data.coords.x,self.graph_data.coords.y, 'r')
                 self.plot(self.graph_data.border_outer.x,self.graph_data.border_outer.y, 'b')
@@ -175,21 +156,23 @@ class Window(QWidget):
                 msg.setIcon(QMessageBox.Warning)
                 msg.exec_()
 
+    #check data types
     def set_complete_file(self):
         graph = self.graph_data
 
         if(self.get_graph_data()):
             graph.get_outer_inner()
             self.plot(self.graph_data.border_outer.x,self.graph_data.border_outer.y, 'b')
+
             for i in range (len(self.graph_data.inner)):
                 self.plot(self.graph_data.inner[i].x, self.graph_data.inner[i].y, 'r')
-            # self.plot(self.graph_data.inner[1].x, self.graph_data.inner[1].y, 'r')
+
             tracks = ParalelTracks(self.graph_data.outer, self.graph_data.inner, 0.5)
-            # print(tracks.paralels)
+
             for i in range(len(tracks.paralels)):
                 self.plot(tracks.paralels[i][0],tracks.paralels[i][1], 'y')
 
-
+    #looks good
     def get_graph_data(self):
         home_dir = str(Path.cwd())
         fname = QFileDialog.getOpenFileName(self, 'Open file', home_dir)
@@ -197,19 +180,23 @@ class Window(QWidget):
             self.graph_data.set_coords(fname[0])
             return fname[0]
 
+    #not used
     def update(self):
         pass
 
+    #looks good
     def get_desktop_geometry(self):
         width = QDesktopWidget().screenGeometry().width()
         height = QDesktopWidget().screenGeometry().height()
         return width, height
 
+    #looks good
     def get_window_geometry(self):
         width = self.geometry().width()
         height = self.geometry().height()
         return width, height
 
+    #looks good
     def set_location(self):
         screen_width, screen_height = self.get_desktop_geometry()
         window_width, window_height = self.get_window_geometry()
@@ -217,12 +204,11 @@ class Window(QWidget):
         y = int((screen_height - window_height)/2)
         self.move(x, y)
 
+    #looks good
     def plot(self, x, y, color):
         pen = pg.mkPen(color=color)
         self.graphWidget.plot(x, y, name=None, pen=pen)
         
-
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = Window()
