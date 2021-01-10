@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+    <name>Měření z Mapy.cz</name>
+    <open>1</open>
+    <description>
+    <![CDATA[
+        popisek
+    ]]>
+    </description>
+    <Style id="path"><LineStyle><color>b20000ff</color><width>6</width></LineStyle></Style>
+    <Style id="routepoint"><IconStyle><color>b20000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_square.png</href></Icon></IconStyle></Style>
+    <Style id="waypoint"><IconStyle><color>b20000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>
+    <Folder>
+        <name>1. část</name>
+        <visibility>1</visibility>
+        <open>1</open>
+        <Placemark><name>Měření z Mapy.cz</name><styleUrl>#path</styleUrl>
+        <LineString>
+            <tessellate>1</tessellate>
+            <coordinates>
+                17.8775453568,49.8768574744,269.0
+                17.8775855899,49.8768554628,269.0
+                17.8775855899,49.8767615855,269.0
+                17.8775440156,49.8767615855,269.0
+				17.8775453568,49.8768574744,269.0
+            </coordinates>
+        </LineString>
+        </Placemark>
+    </Folder>
+</Document>
+</kml>

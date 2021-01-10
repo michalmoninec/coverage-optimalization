@@ -8,7 +8,7 @@ import numpy as np
 import math
 from shapely.geometry import Polygon
 
-
+ 
 class Coordinates():
     def __init__(self, x, y):
         super().__init__()
@@ -36,13 +36,13 @@ def get_closed_loops(data):
         for i in range (len(split_coords)):
             index = len(data) - 1 - data[::-1].index(split_coords[i])
             split_indexes.append(index)
-    print(split_indexes)
+    # print(split_indexes)
     split_indexes = sorted(split_indexes)
-    print(f'sorted indexes: {split_indexes}')
-    print(f'Cele data: {data}')
+    # print(f'sorted indexes: {split_indexes}')
+    # print(f'Cele data: {data}')
     for i in range (len(split_indexes)-1):
         separated_loops.append(data[split_indexes[i]+1:split_indexes[i+1]+1])
-    print(f'Separovane smycky: {separated_loops}')
+    # print(f'Separovane smycky: {separated_loops}')
     return separated_loops
 
 
@@ -52,6 +52,10 @@ class GraphData():
         self.coords = Coordinates(None, None)
         self.border_inner = Coordinates(None, None)
         self.border_outer = Coordinates(None, None)
+        self.inner_x = []
+        self.inner_y = []
+        self.inner = []
+        self.outer = []
         self.border_outer_complete = []
         # self.coors = []
         self.file_name = file_name
@@ -99,7 +103,7 @@ class GraphData():
         for i in range (len(x)):
             if [x[i],y[i]] in closed_loop:
                 closed_loop.append([x[i],y[i]])
-                print(closed_loop)
+                # print(closed_loop)
                 return closed_loop
             else:
                 closed_loop.append([x[i],y[i]])
@@ -118,8 +122,8 @@ class GraphData():
         inner_polygon = Polygon(inner_set)
 
         x, y = outer_polygon.exterior.coords.xy
-        print(f'X coords> {x}')
-        print(f'Y coords> {y}')
+        # print(f'X coords> {x}')
+        # print(f'Y coords> {y}')
 
         if outer_polygon.contains(inner_polygon):
             return True
@@ -131,27 +135,31 @@ class GraphData():
         for i in range (len(self.coords.x)):
             whole_set.append((self.coords.x[i],self.coords.y[i]))
         closed_loops = get_closed_loops(whole_set)
-        print(closed_loops[0][0])
+        # print(closed_loops[0][0])
+        # print(f"closed loops: {len(closed_loops)}")
+        # print(f"closed loops: {closed_loops}")
+        
 
         outer_x = []
         outer_y = []
         inner_x = []
         inner_y = []
+        
         for i in range (len(closed_loops[0])):
             coords = closed_loops[0][i]
             outer_x.append(coords[0])
             outer_y.append(coords[1])
+            self.outer.append((coords[0],coords[1]))
+
         self.border_outer.x = outer_x
         self.border_outer.y = outer_y
 
+        for k in range(1,len(closed_loops)):
+            for i in range (len(closed_loops[k])):
+                coords = closed_loops[k][i]
+                inner_x.append(coords[0])
+                inner_y.append(coords[1])
+            self.inner.append(Coordinates(inner_x,inner_y))
+            inner_y = []
+            inner_x = []
 
-        for i in range (len(closed_loops[1])):
-            coords = closed_loops[1][i]
-            inner_x.append(coords[0])
-            inner_y.append(coords[1])
-
-        self.border_inner.x = inner_x
-        self.border_inner.y = inner_y
-        # self.border_outer = closed_loops[0]
-        # self.border_inner = closed_loops[1]
-        # return(get_closed_loops(whole_set))

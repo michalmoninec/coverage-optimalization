@@ -1,4 +1,6 @@
 from graph import GraphData
+from paralel_tracks import ParalelTracks
+
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QFileDialog, QVBoxLayout, QWidget, QHBoxLayout, QMessageBox, QRadioButton, QStackedWidget, QStackedLayout, QLabel
 from PyQt5.QtGui import QIcon
@@ -117,48 +119,8 @@ class Window(QWidget):
         self.setLayout(layout)
         self.set_location()
 
-        # if self.inputMethod.rb_one_file.selected:
-        #     self.changeArea = PushButton('default kokocina')
-        #     self.layout().addWidget(self.changeArea)
-
-        # self.b4 = QtWidgets.QPushButton(self)
-        # self.b4.setText("Choose file with everything")
-        # self.b4.clicked.connect(self.set_complete_file)
-
         self.show()
 
-
-        # self.b1 = QtWidgets.QPushButton(self)
-        # self.b1.setText("Outer border")
-        # self.b1.clicked.connect(self.button_clicked_outer)
-
-        # self.b2 = QtWidgets.QPushButton(self)
-        # self.b2.setText("Inner border")
-        # self.b2.clicked.connect(self.button_clicked_inner)
-        # self.b2.setEnabled(False)
-        
-        # self.b3 = QtWidgets.QPushButton(self)
-        # self.b3.setText("Clear all")
-        # self.b3.clicked.connect(self.clear_graph)
-
-        # self.b4 = QtWidgets.QPushButton(self)
-        # self.b4.setText("Choose file with everything")
-        # self.b4.clicked.connect(self.set_complete_file)
-
-        # self.b5 = QtWidgets.QPushButton(self)
-        # self.b5.setText('button shouldnt be here')
-        # self.b5.clicked.connect(self.create_button)
-
-
-        # navbar.addWidget(self.b1)
-        # navbar.addWidget(self.b2)
-        # navbar.addWidget(self.b3)
-
-        # navbar2.addWidget(self.b4)
-        # navbar2.addWidget(self.b5)
-
-        # layout.addLayout(navbar2)
-        # layout.addLayout(navbar)
 
     def tryPrint(self):
         if self.inputMethod.rb_one_file.selected:
@@ -219,7 +181,14 @@ class Window(QWidget):
         if(self.get_graph_data()):
             graph.get_outer_inner()
             self.plot(self.graph_data.border_outer.x,self.graph_data.border_outer.y, 'b')
-            self.plot(self.graph_data.border_inner.x,self.graph_data.border_inner.y, 'r')
+            for i in range (len(self.graph_data.inner)):
+                self.plot(self.graph_data.inner[i].x, self.graph_data.inner[i].y, 'r')
+            # self.plot(self.graph_data.inner[1].x, self.graph_data.inner[1].y, 'r')
+            tracks = ParalelTracks(self.graph_data.outer, self.graph_data.inner, 0.5)
+            # print(tracks.paralels)
+            for i in range(len(tracks.paralels)):
+                self.plot(tracks.paralels[i][0],tracks.paralels[i][1], 'y')
+
 
     def get_graph_data(self):
         home_dir = str(Path.cwd())
