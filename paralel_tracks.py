@@ -15,10 +15,7 @@ class ParalelTracks():
         inner = []
 
         for k in range(len(inner_i)):
-            inner_2 = []
-            for i in range(len(inner_i[k].x)):
-                inner_2.append((inner_i[k].x[i],inner_i[k].y[i]))
-            inner.append(Polygon(inner_2))
+            inner.append(Polygon(inner_i[k]))
         
         self.main(width, inner)
 
@@ -39,6 +36,7 @@ class ParalelTracks():
                 if (line.intersection(outer).geom_type=="LineString"):
                     intersected_points = list(line.intersection(outer).coords)
                 else:
+                    print(f"multiple intersections: {line.intersection(outer)}")
                     intersected_points = []
 
                 if len(intersected_points)>1:
@@ -67,8 +65,10 @@ class ParalelTracks():
                                 else:
                                     pass
                             if contains == False:
+                                # print(f'dalsi : {lin.coords}')
                                 paralels.append(intersect(lin.coords))
                     else:
+                        # print(f"another onee: {intersected_points}")
                         paralels.append(intersect(intersected_points))
             x+=width
         self.paralels = paralels

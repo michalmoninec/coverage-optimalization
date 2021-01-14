@@ -61,7 +61,7 @@ class Window(QWidget):
     def initUI(self):
         self.graph_data = GraphData(None)
         title = 'Foking automower'
-        
+
         self.setWindowTitle(title)
         self.setGeometry(0, 0, 800, 400)
         self.setWindowIcon(QIcon('icon.png'))
@@ -157,15 +157,16 @@ class Window(QWidget):
                 msg.exec_()
 
     #check data types
-    def set_complete_file(self):
+    def set_complete_file(self):    
         graph = self.graph_data
 
         if(self.get_graph_data()):
             graph.get_outer_inner()
-            self.plot(self.graph_data.border_outer.x,self.graph_data.border_outer.y, 'b')
 
-            for i in range (len(self.graph_data.inner)):
-                self.plot(self.graph_data.inner[i].x, self.graph_data.inner[i].y, 'r')
+            self.plot(graph.outer_plot.x,graph.outer_plot.y, 'b')
+
+            for i in range(len(self.graph_data.inner_plot)):
+                self.plot(self.graph_data.inner_plot[i].x, self.graph_data.inner_plot[i].y, 'r')
 
             tracks = ParalelTracks(self.graph_data.outer, self.graph_data.inner, 0.5)
 
