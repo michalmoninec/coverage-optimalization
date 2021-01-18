@@ -10,10 +10,15 @@ import pyqtgraph as pg
 import sys
 from copy import deepcopy
 
+from hirearchial_clustering import hierarichial_cluster as cluster
+
+
+
 
 class PushButton(QtGui.QPushButton):
     def __init__(self, parent=None):
       super(PushButton, self).__init__(parent)
+      self.setStyleSheet('background-color: darkgray; border-radius: 5px; height: 50px; width: 100px')
 
 class RadioButton(QtGui.QRadioButton):
     def __init__(self,parent=None):
@@ -63,8 +68,15 @@ class Window(QWidget):
         title = 'Foking automower'
 
         self.setWindowTitle(title)
-        self.setGeometry(0, 0, 800, 400)
+        self.setGeometry(0, 0, 1000, 600)
         self.setWindowIcon(QIcon('icon.png'))
+
+        # self.setStyleSheet("background-color: gray;")
+        style = """
+        background-color: lightgray;
+        """
+
+        self.setStyleSheet(style)
 
         layout = QVBoxLayout()
         navbar = QHBoxLayout()
@@ -92,12 +104,14 @@ class Window(QWidget):
 
         layout.addLayout(self.inputMethod)
         layout.addLayout(self.inputFile)
-        layout.addWidget(self.graphWidget)
+        layout.addWidget(self.graphWidget,2)
         layout.addLayout(navbar)
         layout.addLayout(navbar2)
 
         self.setLayout(layout)
         self.set_location()
+
+        self.graphWidget.setBackground(None)
 
         self.show()
 
@@ -169,9 +183,24 @@ class Window(QWidget):
                 self.plot(self.graph_data.inner_plot[i].x, self.graph_data.inner_plot[i].y, 'r')
 
             tracks = ParalelTracks(self.graph_data.outer, self.graph_data.inner, 0.5)
+            # print(f"Struktura ParalelTracks: {tracks.paralels_raw}")
+            tracks.getUpperPoints()
+            
+            
+            # print(tracks.upper[0].point[0])
+            for i in range(len(tracks.paralels)):
+                self.plot_upper(tracks.upper[i].point)
 
             for i in range(len(tracks.paralels)):
-                self.plot(tracks.paralels[i][0],tracks.paralels[i][1], 'y')
+                self.plot(tracks.paralels[i][0],tracks.paralels[i][1], 'k')
+
+            arr = []
+            for i in range(len(tracks.upper)):
+                arr.append((tracks.upper[i].point))
+            # print(f"arr do clusteru: {arr}")
+            cluster(arr)
+
+            
 
     #looks good
     def get_graph_data(self):
@@ -209,6 +238,11 @@ class Window(QWidget):
     def plot(self, x, y, color):
         pen = pg.mkPen(color=color)
         self.graphWidget.plot(x, y, name=None, pen=pen)
+
+    def plot_upper(self,point):
+        # print(f"tady to dojde : {point[0]}")
+        # pen = pg.mkPen(color="r")
+        self.graphWidget.plot([point[0]],[point[1]], name="another", pen=None, symbol='o', symbolPen=pg.mkPen(color=(0, 0, 255), width=0),symbolBrush=pg.mkBrush(0, 0, 255, 255),symbolSize=7)
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)
