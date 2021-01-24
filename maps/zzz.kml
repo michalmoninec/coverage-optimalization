@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+    <name>Měření z Mapy.cz</name>
+    <open>1</open>
+    <description>
+    <![CDATA[
+        popisek
+    ]]>
+    </description>
+    <Style id="path"><LineStyle><color>b20000ff</color><width>6</width></LineStyle></Style>
+    <Style id="routepoint"><IconStyle><color>b20000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_square.png</href></Icon></IconStyle></Style>
+    <Style id="waypoint"><IconStyle><color>b20000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>
+    <Folder>
+        <name>1. část</name>
+        <visibility>1</visibility>
+        <open>1</open>
+        <Placemark><name>Měření z Mapy.cz</name><styleUrl>#path</styleUrl>
+        <LineString>
+            <tessellate>1</tessellate>
+            <coordinates>
+                17.877022326,49.8769976199,269.0
+                17.877869904,49.8769754916,269.0
+                17.8778672218,49.8766677082,269.0
+                17.8770384192,49.8766744137,269.0
+                17.8770840168,49.8770251125,269.0
+                17.877252996,49.8769386113,269.0
+                17.8774434328,49.8769319057,269.0
+                17.8774407506,49.8768454045,269.0
+                17.8772342205,49.8768507689,269.0
+                17.8773200512,49.8769580573,269.0
+                17.8775292635,49.8769459873,269.0
+                17.8777197003,49.8769319057,269.0
+                17.8777223825,49.8768420517,269.0
+                17.8775453568,49.8768474162,269.0
+                17.8775882721,49.8769647628,269.0
+                17.8774353862,49.8767589033,269.0
+                17.8775721788,49.8767555505,269.0
+                17.87756145,49.876691848,269.0
+                17.877432704,49.8766985536,269.0
+                17.8776526451,49.8767542094,269.0
+                17.8777679801,49.8767555505,269.0
+            </coordinates>
+        </LineString>
+        </Placemark>
+    </Folder>
+</Document>
+</kml>

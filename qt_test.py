@@ -79,34 +79,34 @@ class Window(QWidget):
         self.setStyleSheet(style)
 
         layout = QVBoxLayout()
-        navbar = QHBoxLayout()
-        navbar2 = QHBoxLayout()
+        # navbar = QHBoxLayout()
+        # navbar2 = QHBoxLayout()
 
-        self.inputMethod = InputMethod()
-        self.inputMethod.rb_one_file.toggled.connect(self.tryPrint)
+        # self.inputMethod = InputMethod()
+        # self.inputMethod.rb_one_file.toggled.connect(self.tryPrint)
 
         self.inputFile = QStackedLayout()
 
         self.inputSingleFile = InputSingleFile()
         self.inputSingleFile.selectFile.clicked.connect(self.set_complete_file)
 
-        self.inputSeparatedFiles = InputSeparatedFiles()
-        self.inputSeparatedFiles.selectOuter.clicked.connect(self.button_clicked_outer)
-        self.inputSeparatedFiles.selectInner.clicked.connect(self.button_clicked_inner)
+        # self.inputSeparatedFiles = InputSeparatedFiles()
+        # self.inputSeparatedFiles.selectOuter.clicked.connect(self.button_clicked_outer)
+        # self.inputSeparatedFiles.selectInner.clicked.connect(self.button_clicked_inner)
 
         self.inputFile.addWidget(self.inputSingleFile)
-        self.inputFile.addWidget(self.inputSeparatedFiles)
+        # self.inputFile.addWidget(self.inputSeparatedFiles)
 
         self.graphWidget = pg.PlotWidget()
         self.graphWidget.setAspectLocked()
         self.graphWidget.getPlotItem().hideAxis('bottom')
         self.graphWidget.getPlotItem().hideAxis('left')
 
-        layout.addLayout(self.inputMethod)
+        # layout.addLayout(self.inputMethod)
         layout.addLayout(self.inputFile)
         layout.addWidget(self.graphWidget,2)
-        layout.addLayout(navbar)
-        layout.addLayout(navbar2)
+        # layout.addLayout(navbar)
+        # layout.addLayout(navbar2)
 
         self.setLayout(layout)
         self.set_location()
@@ -128,47 +128,50 @@ class Window(QWidget):
 
     #not used
     def clear_graph(self):
-        self.graphWidget.clear()
-        self.graph_data.coords.clear()
-        self.graph_data.border_inner.clear()
-        self.graph_data.border_outer.clear()
-        self.b1.setEnabled(True)
-        self.b2.setEnabled(False)
+        pass
+        # self.graphWidget.clear()
+        # self.graph_data.coords.clear()
+        # # self.graph_data.border_inner.clear()
+        # # self.graph_data.border_outer.clear()
+        # self.b1.setEnabled(True)
+        # self.b2.setEnabled(False)
 
     #add consequencecy logic to select outer at first
     def button_clicked_outer(self):
-        if (self.get_graph_data()):
-            coors = self.graph_data.coords
-            if(self.graph_data.check_closed_loop(coors.x,coors.y)):
-                self.plot(coors.x,coors.y, 'b')
-                self.graph_data.border_outer.x = deepcopy(coors.x)
-                self.graph_data.border_outer.y = deepcopy(coors.y)
-                self.b1.setEnabled(False)
-                self.b2.setEnabled(True)               
-            else:
-                print('Incorrect input.')
-                msg = QMessageBox()
-                msg.setWindowTitle("Outer border")
-                msg.setText("Outer border is not closed")
-                msg.setIcon(QMessageBox.Information)
-                msg.exec_()
+        pass
+        # if (self.get_graph_data()):
+        #     coors = self.graph_data.coords
+        #     if(self.graph_data.check_closed_loop(coors.x,coors.y)):
+        #         self.plot(coors.x,coors.y, 'b')
+        #         self.graph_data.border_outer.x = deepcopy(coors.x)
+        #         self.graph_data.border_outer.y = deepcopy(coors.y)
+        #         self.b1.setEnabled(False)
+        #         self.b2.setEnabled(True)               
+        #     else:
+        #         print('Incorrect input.')
+        #         msg = QMessageBox()
+        #         msg.setWindowTitle("Outer border")
+        #         msg.setText("Outer border is not closed")
+        #         msg.setIcon(QMessageBox.Information)
+        #         msg.exec_()
 
     #change outer, inner - after graph validity check
-    def button_clicked_inner(self): 
-        if (self.get_graph_data()):
-            #inner polygon check
-            if(self.graph_data.check_inner_validity()):
-                self.plot(self.graph_data.coords.x,self.graph_data.coords.y, 'r')
-                self.plot(self.graph_data.border_outer.x,self.graph_data.border_outer.y, 'b')
-                # print(self.graph_data.border_outer.x)
-                self.update()
-            else:
-                print('Incorrect input.')
-                msg = QMessageBox()
-                msg.setWindowTitle("Inner border")
-                msg.setText("Inner border is outside of outer border.")
-                msg.setIcon(QMessageBox.Warning)
-                msg.exec_()
+    def button_clicked_inner(self):
+        pass
+        # if (self.get_graph_data()):
+        #     #inner polygon check
+        #     if(self.graph_data.check_inner_validity()):
+        #         self.plot(self.graph_data.coords.x,self.graph_data.coords.y, 'r')
+        #         self.plot(self.graph_data.border_outer.x,self.graph_data.border_outer.y, 'b')
+        #         # print(self.graph_data.border_outer.x)
+        #         self.update()
+        #     else:
+        #         print('Incorrect input.')
+        #         msg = QMessageBox()
+        #         msg.setWindowTitle("Inner border")
+        #         msg.setText("Inner border is outside of outer border.")
+        #         msg.setIcon(QMessageBox.Warning)
+        #         msg.exec_()
 
     #check data types
     def set_complete_file(self):    
@@ -176,18 +179,15 @@ class Window(QWidget):
 
         if(self.get_graph_data()):
             graph.get_outer_inner()
-
             self.plot(graph.outer_plot.x,graph.outer_plot.y, 'b')
 
             for i in range(len(self.graph_data.inner_plot)):
                 self.plot(self.graph_data.inner_plot[i].x, self.graph_data.inner_plot[i].y, 'r')
 
             tracks = ParalelTracks(self.graph_data.outer, self.graph_data.inner, 0.5)
-            # print(f"Struktura ParalelTracks: {tracks.paralels_raw}")
             tracks.getUpperPoints()
             
             
-            # print(tracks.upper[0].point[0])
             for i in range(len(tracks.paralels)):
                 self.plot_upper(tracks.upper[i].point)
 
@@ -197,18 +197,20 @@ class Window(QWidget):
             arr = []
             for i in range(len(tracks.upper)):
                 arr.append((tracks.upper[i].point))
-            # print(f"arr do clusteru: {arr}")
             cluster(arr)
 
             
 
     #looks good
     def get_graph_data(self):
-        home_dir = str(Path.cwd())
+        #add last opened location - if it is possible
+        home_dir = str(Path.cwd()) + "/maps"
         fname = QFileDialog.getOpenFileName(self, 'Open file', home_dir)
         if fname[0]:
             self.graph_data.set_coords(fname[0])
             return fname[0]
+        else:
+            return None
 
     #not used
     def update(self):

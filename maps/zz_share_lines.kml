@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+    <name>Měření z Mapy.cz</name>
+    <open>1</open>
+    <description>
+    <![CDATA[
+        popisek
+    ]]>
+    </description>
+    <Style id="path"><LineStyle><color>b20000ff</color><width>6</width></LineStyle></Style>
+    <Style id="routepoint"><IconStyle><color>b20000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_square.png</href></Icon></IconStyle></Style>
+    <Style id="waypoint"><IconStyle><color>b20000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>
+    <Folder>
+        <name>1. část</name>
+        <visibility>1</visibility>
+        <open>1</open>
+        <Placemark><name>Měření z Mapy.cz</name><styleUrl>#path</styleUrl>
+        <LineString>
+            <tessellate>1</tessellate>
+            <coordinates>
+                17.8769981861,49.8769707978,269.0
+                17.8777197003,49.8769520223,269.0
+                17.8776445985,49.8766703904,269.0
+                17.8770008683,49.8767200112,269.0
+                17.8770625591,49.8769949377,269.0
+                17.8774863482,49.876832664,269.0
+                17.8774434328,49.8767615855,269.0
+                17.8772583604,49.8767810315,269.0
+                17.8774005175,49.8769138008,269.0
+                17.8776392341,49.8769017309,269.0
+                17.8776070476,49.8768480867,269.0
+                17.8775426745,49.8768601567,269.0
+                17.877497077,49.8769312352,269.0
+            </coordinates>
+        </LineString>
+        </Placemark>
+    </Folder>
+</Document>
+</kml>
