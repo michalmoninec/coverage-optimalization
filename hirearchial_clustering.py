@@ -8,8 +8,9 @@ def hierarichial_cluster(data):
     t0 = time.time()
     clusters = hcluster.fclusterdata(data, thresh, criterion="distance")
     print(f"Hirearchial time: {time.time()-t0}")
-    print(clusters)
-    print(len(clusters))
+    # print(clusters)
+    # print(len(clusters))
+    print(f"Count of clusters: {max(clusters)}")
     return clusters
 
 # hierarichial_cluster(data)

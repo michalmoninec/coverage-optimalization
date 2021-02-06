@@ -37,7 +37,7 @@ def trim_backwards(a_rr, norm):
 
     for i in range(2 ,len(arr)):
         if line_intersection(trimmed_lines, arr[i], trimmed[-1]):
-            print('focking intersection!')
+            # print('focking intersection!')
             trimmed.append(line_intersection(trimmed_lines, arr[i], trimmed[-1]))
         else:
             trimmed.append(arr[i])
@@ -62,13 +62,21 @@ def get_closed_loops(data):
             elif len(adepts)<2:
                 adepts.append(data[i])
                 adepts_lines.append(LineString([(adepts[0]),(adepts[1])]))
-            elif line_intersection(adepts_lines, data[i], adepts[-1]):
-                normalized = deepcopy(adepts)
-                normalized.append(data[i])
-                adepts.append(line_intersection(adepts_lines, data[i], adepts[-1]))
-                trimmed = trim_backwards(adepts, normalized)
-                separated_loops.append(trimmed)
-                open = False
+            elif line_intersection(adepts_lines, data[i], adepts[-1]) or (data[i] in adepts) :
+                if data[i] in adepts:
+                    normalized = deepcopy(adepts)
+                    normalized.append(data[i])
+                    adepts.append(data[i])
+                    trimmed = trim_backwards(adepts, normalized)
+                    separated_loops.append(trimmed)
+                    open = False
+                else:
+                    normalized = deepcopy(adepts)
+                    normalized.append(data[i])
+                    adepts.append(line_intersection(adepts_lines, data[i], adepts[-1]))
+                    trimmed = trim_backwards(adepts, normalized)
+                    separated_loops.append(trimmed)
+                    open = False
             else:
                 adepts.append(data[i])
                 adepts_lines.append(LineString([(adepts[-1]),(adepts[-2])]))
@@ -107,6 +115,14 @@ def get_closed_loops(data):
 #fix outer, inner data structures
 #coords - make whole array of points [(x,y),(x,y)]
 
+def data_to_print(arr):
+    arr_x = []
+    arr_y = []
+    for i in range(len(arr)):
+        arr_x.append(arr[i][0])
+        arr_y.append(arr[i][1])
+    return (arr_x,arr_y)
+
 class GraphData():
     def __init__(self, file_name):
         super().__init__()
@@ -115,6 +131,14 @@ class GraphData():
         self.outer = []
         self.inner_plot = []
         self.file_name = file_name
+
+    def set_default(self):
+        self.coords = []
+        self.inner = []
+        self.outer = []
+        self.inner_plot = []
+        self.outer_plot = []
+
 
     #handle different type of KML files
     def set_coords(self, file_name):
@@ -184,32 +208,54 @@ class GraphData():
     #check if outer contains all of inner loops
     def get_outer_inner(self):
         closed_loops = get_closed_loops(self.coords)
-        print(f"closed loops: {closed_loops}")
+        # print(f"closed loops: {closed_loops}")
 
-        outer_x = []    
-        outer_y = []
-        inner_x = []
-        inner_y = []
+        polygons = []
+
+        for i in range(len(closed_loops)):
+            polygons.append(Polygon(closed_loops[i]).area)
+
+        # print(f"polygons of closed loops: {polygons.index(max(polygons))}")
+        # print(f"polygons areas: {polygons[0].area}")
+        outer_index = polygons.index(max(polygons))
+
+        for i in range(len(closed_loops)):
+            if i == outer_index:
+                self.outer = closed_loops[i]
+            else:
+                self.inner.append(closed_loops[i])
+
+        # print(f"self.inner : {self.inner}")
+        # print(f"self.outer : {self.outer}")
+
+        self.outer_plot = data_to_print(self.outer)
+        # print(f"outer_plot: {self.outer_plot}")
+
+        for i in range(len(self.inner)):
+            self.inner_plot.append(data_to_print(self.inner[i]))
+
+        # print(f"inner_plot: {self.inner_plot}")
+
+
+        # for i in range(len(closed_loops[0])):
+        #     coords = closed_loops[0][i]
+        #     outer_x.append(coords[0])
+        #     outer_y.append(coords[1])
+        #     self.outer.append((coords[0],coords[1]))
         
-        for i in range(len(closed_loops[0])):
-            coords = closed_loops[0][i]
-            outer_x.append(coords[0])
-            outer_y.append(coords[1])
-            self.outer.append((coords[0],coords[1]))
-        
-        self.outer_plot = Coordinates(outer_x, outer_y)
+        # self.outer_plot = Coordinates(outer_x, outer_y)
 
-        # self.border_outer.x = outer_x
-        # self.border_outer.y = outer_y
+        # # self.border_outer.x = outer_x
+        # # self.border_outer.y = outer_y
 
-        for k in range(1,len(closed_loops)):
-            inner = []
-            for i in range (len(closed_loops[k])):
-                coords = closed_loops[k][i]
-                inner.append((coords[0],coords[1]))
-                inner_x.append(coords[0])
-                inner_y.append(coords[1])
-            self.inner_plot.append(Coordinates(inner_x,inner_y))
-            self.inner.append(inner)
-            inner_y = []
-            inner_x = []
+        # for k in range(1,len(closed_loops)):
+        #     inner = []
+        #     for i in range (len(closed_loops[k])):
+        #         coords = closed_loops[k][i]
+        #         inner.append((coords[0],coords[1]))
+        #         inner_x.append(coords[0])
+        #         inner_y.append(coords[1])
+        #     self.inner_plot.append(Coordinates(inner_x,inner_y))
+        #     self.inner.append(inner)
+        #     inner_y = []
+        #     inner_x = []

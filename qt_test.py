@@ -2,7 +2,8 @@ from graph import GraphData
 from paralel_tracks import ParalelTracks
 
 from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QFileDialog, QVBoxLayout, QWidget, QHBoxLayout, QMessageBox, QRadioButton, QStackedWidget, QStackedLayout, QLabel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QFileDialog, QVBoxLayout, QWidget, QHBoxLayout, QMessageBox, QFrame, QRadioButton, QStackedWidget, QStackedLayout, QLabel, QSizePolicy
+from PyQt5.QtCore import Qt 
 from PyQt5.QtGui import QIcon
 from pathlib import Path
 from pyqtgraph import PlotWidget, plot
@@ -19,6 +20,8 @@ class PushButton(QtGui.QPushButton):
     def __init__(self, parent=None):
       super(PushButton, self).__init__(parent)
       self.setStyleSheet('background-color: darkgray; border-radius: 5px; height: 50px; width: 100px')
+    #   self.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
+      self.setFixedSize(100,50)
 
 class RadioButton(QtGui.QRadioButton):
     def __init__(self,parent=None):
@@ -46,12 +49,14 @@ class InputSingleFile(QWidget):
         layout = QHBoxLayout()
         self.selectFile = PushButton('Choose file')
         layout.addWidget(self.selectFile)
+        self.changeGraph = PushButton('Delete data')
+        layout.addWidget(self.changeGraph)
         self.setLayout(layout)
 
 class InputSeparatedFiles(QWidget):
     def __init__(self, parent=None):
         super(InputSeparatedFiles, self).__init__(parent)
-        layout = QHBoxLayout()
+        layout = QHBoxLayout(parent)
         self.selectOuter = PushButton('Choose outer')
         self.selectInner = PushButton('Choose inner')
         layout.addWidget(self.selectOuter)
@@ -71,107 +76,134 @@ class Window(QWidget):
         self.setGeometry(0, 0, 1000, 600)
         self.setWindowIcon(QIcon('icon.png'))
 
-        # self.setStyleSheet("background-color: gray;")
         style = """
         background-color: lightgray;
+        margin: 0;
+        padding: 0;
         """
-
         self.setStyleSheet(style)
 
         layout = QVBoxLayout()
-        # navbar = QHBoxLayout()
-        # navbar2 = QHBoxLayout()
+        layout.setSpacing(0)
+        layout.setContentsMargins(0,0,0,0)
 
-        # self.inputMethod = InputMethod()
-        # self.inputMethod.rb_one_file.toggled.connect(self.tryPrint)
+        self.headerFrame = QFrame(self)
+        self.headerFrame.setStyleSheet('''
+        background-color: magenta;
+        ''')
 
-        self.inputFile = QStackedLayout()
 
-        self.inputSingleFile = InputSingleFile()
-        self.inputSingleFile.selectFile.clicked.connect(self.set_complete_file)
+        
+        self.settingsArea = QHBoxLayout(self.headerFrame)
+        # self.settingsArea.setSpacing(0)
+        self.settingsArea.setAlignment(Qt.AlignLeft)
 
-        # self.inputSeparatedFiles = InputSeparatedFiles()
-        # self.inputSeparatedFiles.selectOuter.clicked.connect(self.button_clicked_outer)
-        # self.inputSeparatedFiles.selectInner.clicked.connect(self.button_clicked_inner)
+        self.settingsToggle = QStackedWidget()
 
-        self.inputFile.addWidget(self.inputSingleFile)
-        # self.inputFile.addWidget(self.inputSeparatedFiles)
+        self.settingsButton = PushButton('Settings')
+        self.settingsButton.clicked.connect(self.showsettings)
+
+        # self.settingsButton.setAlignment(Qt.AlignRight)
+        
+ 
+
+        self.backButton = PushButton("Back to graph")
+        self.backButton.clicked.connect(self.backtograph)
+
+        
+        # self.backButton.setAlignment(Qt.AlignRight)
+
+        self.settingsToggle.addWidget(self.settingsButton)
+        self.settingsToggle.addWidget(self.backButton)
+
+        # self.settingsArea.setAlignment(Qt.AlignRight)
+        self.settingsArea.addStretch(1)
+        self.settingsArea.addWidget(self.settingsToggle)
+        # self.settingsArea.addStretch(1)
+
+        self.contentFrame = QFrame()
+        self.contentFrame.setStyleSheet('background: green;')
+
+        self.contentLayout = QHBoxLayout(self.contentFrame)
+        self.contentLayout.setContentsMargins(0,0,0,0)
+
+        self.contentStack = QStackedLayout()
+        # self.contentStack.setSpacing(0)
+        
+
 
         self.graphWidget = pg.PlotWidget()
         self.graphWidget.setAspectLocked()
         self.graphWidget.getPlotItem().hideAxis('bottom')
         self.graphWidget.getPlotItem().hideAxis('left')
+        self.graphWidget.setMenuEnabled(False)
+        self.graphWidget.setStyleSheet('''
+        border: 5px solid blue;
+        ''')
+        self.graphWidget.setBackground(None)
 
-        # layout.addLayout(self.inputMethod)
-        layout.addLayout(self.inputFile)
-        layout.addWidget(self.graphWidget,2)
-        # layout.addLayout(navbar)
-        # layout.addLayout(navbar2)
+        self.settingsMenu = QWidget()
+        self.settingsWrapper = QWidget()
+        settingsWrapperLayout = QHBoxLayout()
+        settingsLayout = QVBoxLayout()
+
+        
+        # self.startButton = QLabel('Plot the fucking area!')
+        # self.startButton.setAlignment(Qt.AlignHCenter)
+        # self.startButton.setAlignment(Qt.AlignCenter)
+
+        self.startButton = PushButton('Start fucking ploting')
+        self.startButton.clicked.connect(self.set_complete_file)
+        self.testButton = PushButton("fockkin")
+
+        # settingsLayout.addStretch(1)
+        settingsLayout.addWidget(self.startButton)
+        settingsLayout.addWidget(self.testButton)
+        # settingsLayout.addStretch(1)
+        
+
+        settingsWrapperLayout.addStretch(1)
+        settingsWrapperLayout.addLayout(settingsLayout)
+        settingsWrapperLayout.addStretch(1)
+
+        self.settingsMenu.setLayout(settingsWrapperLayout)
+
+
+        self.contentStack.addWidget(self.graphWidget)
+        self.contentStack.addWidget(self.settingsMenu)
+
+        self.contentLayout.addLayout(self.contentStack)
+
+
+        layout.addWidget(self.headerFrame)
+        layout.addWidget(self.contentFrame,1)
 
         self.setLayout(layout)
         self.set_location()
 
-        self.graphWidget.setBackground(None)
+        
 
         self.show()
 
-    #looks good
-    def tryPrint(self):
-        if self.inputMethod.rb_one_file.selected:
-            self.inputFile.setCurrentWidget(self.inputSingleFile)
-        else:
-            self.inputFile.setCurrentWidget(self.inputSeparatedFiles)
+    def backtograph(self):
+        print('Helo there')
+        self.settingsToggle.setCurrentWidget(self.settingsButton)
+        self.contentStack.setCurrentWidget(self.graphWidget)
 
-    #not used
-    def create_button(self):
-        pass
+    def showsettings(self):
+        print('General Kenobi')
+        self.settingsToggle.setCurrentWidget(self.backButton)
+        self.contentStack.setCurrentWidget(self.settingsMenu)
 
-    #not used
-    def clear_graph(self):
-        pass
-        # self.graphWidget.clear()
-        # self.graph_data.coords.clear()
-        # # self.graph_data.border_inner.clear()
-        # # self.graph_data.border_outer.clear()
-        # self.b1.setEnabled(True)
-        # self.b2.setEnabled(False)
 
-    #add consequencecy logic to select outer at first
-    def button_clicked_outer(self):
-        pass
-        # if (self.get_graph_data()):
-        #     coors = self.graph_data.coords
-        #     if(self.graph_data.check_closed_loop(coors.x,coors.y)):
-        #         self.plot(coors.x,coors.y, 'b')
-        #         self.graph_data.border_outer.x = deepcopy(coors.x)
-        #         self.graph_data.border_outer.y = deepcopy(coors.y)
-        #         self.b1.setEnabled(False)
-        #         self.b2.setEnabled(True)               
-        #     else:
-        #         print('Incorrect input.')
-        #         msg = QMessageBox()
-        #         msg.setWindowTitle("Outer border")
-        #         msg.setText("Outer border is not closed")
-        #         msg.setIcon(QMessageBox.Information)
-        #         msg.exec_()
-
-    #change outer, inner - after graph validity check
-    def button_clicked_inner(self):
-        pass
-        # if (self.get_graph_data()):
-        #     #inner polygon check
-        #     if(self.graph_data.check_inner_validity()):
-        #         self.plot(self.graph_data.coords.x,self.graph_data.coords.y, 'r')
-        #         self.plot(self.graph_data.border_outer.x,self.graph_data.border_outer.y, 'b')
-        #         # print(self.graph_data.border_outer.x)
-        #         self.update()
-        #     else:
-        #         print('Incorrect input.')
-        #         msg = QMessageBox()
-        #         msg.setWindowTitle("Inner border")
-        #         msg.setText("Inner border is outside of outer border.")
-        #         msg.setIcon(QMessageBox.Warning)
-        #         msg.exec_()
+    #remove outer bounds 
+    def change_graph (self):
+        self.graph_data.set_default()
+        print(self.graphWidget)
+        print(self.graphWidget.listDataItems()[0])
+        for item in self.graphWidget.listDataItems():
+            # if item.name() == 'outer':
+            self.graphWidget.removeItem(item)
 
     #check data types
     def set_complete_file(self):    
@@ -179,10 +211,11 @@ class Window(QWidget):
 
         if(self.get_graph_data()):
             graph.get_outer_inner()
-            self.plot(graph.outer_plot.x,graph.outer_plot.y, 'b')
+
+            self.plot(graph.outer_plot[0],graph.outer_plot[1], 'b', 'outer')
 
             for i in range(len(self.graph_data.inner_plot)):
-                self.plot(self.graph_data.inner_plot[i].x, self.graph_data.inner_plot[i].y, 'r')
+                self.plot(self.graph_data.inner_plot[i][0], self.graph_data.inner_plot[i][1], 'r', 'inner'+str(i))
 
             tracks = ParalelTracks(self.graph_data.outer, self.graph_data.inner, 0.5)
             tracks.getUpperPoints()
@@ -192,12 +225,15 @@ class Window(QWidget):
                 self.plot_upper(tracks.upper[i].point)
 
             for i in range(len(tracks.paralels)):
-                self.plot(tracks.paralels[i][0],tracks.paralels[i][1], 'k')
+                self.plot(tracks.paralels[i][0],tracks.paralels[i][1], 'k', 'paralels'+str(i))
 
             arr = []
             for i in range(len(tracks.upper)):
                 arr.append((tracks.upper[i].point))
             cluster(arr)
+
+            #tady nastavit, ze to ma prehodit obe okna
+            self.backtograph()
 
             
 
@@ -237,9 +273,9 @@ class Window(QWidget):
         self.move(x, y)
 
     #looks good
-    def plot(self, x, y, color):
+    def plot(self, x, y, color, name):
         pen = pg.mkPen(color=color)
-        self.graphWidget.plot(x, y, name=None, pen=pen)
+        self.graphWidget.plot(x, y, name=name, pen=pen)
 
     def plot_upper(self,point):
         # print(f"tady to dojde : {point[0]}")
