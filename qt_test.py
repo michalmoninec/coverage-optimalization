@@ -1,67 +1,25 @@
 from graph import GraphData
 from paralel_tracks import ParalelTracks
+# from components.infoTable import InfoTable
+from components.pushButton import PushButton
+from components.header import HeaderWidget
 
 from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QFileDialog, QVBoxLayout, QWidget, QHBoxLayout, QMessageBox, QFrame, QRadioButton, QStackedWidget, QStackedLayout, QLabel, QSizePolicy
-from PyQt5.QtCore import Qt 
-from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QFileDialog, \
+    QVBoxLayout, QWidget, QHBoxLayout, QMessageBox, QFrame, QRadioButton, QStackedWidget, \
+    QStackedLayout, QLabel, QSizePolicy, QGraphicsDropShadowEffect, QGroupBox, QFormLayout, QLineEdit, QComboBox, QSpinBox
+from PyQt5.QtCore import Qt, QTimer, QRegExp
+from PyQt5.QtGui import QIcon, QIntValidator, QDoubleValidator, QRegExpValidator
+
 from pathlib import Path
 from pyqtgraph import PlotWidget, plot
 import pyqtgraph as pg
 import sys
+import numpy as np
+
 from copy import deepcopy
 
 from hirearchial_clustering import hierarichial_cluster as cluster
-
-
-
-
-class PushButton(QtGui.QPushButton):
-    def __init__(self, parent=None):
-      super(PushButton, self).__init__(parent)
-      self.setStyleSheet('background-color: darkgray; border-radius: 5px; height: 50px; width: 100px')
-    #   self.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
-      self.setFixedSize(100,50)
-
-class RadioButton(QtGui.QRadioButton):
-    def __init__(self,parent=None):
-        super(RadioButton, self).__init__(parent)
-        self.selected = False
-        self.toggled.connect(self.button_toggled)
-
-    def button_toggled(self, selected):
-        self.selected = selected
-
-class InputMethod(QtGui.QHBoxLayout):
-    def __init__(self, parent=None):
-        super(InputMethod, self).__init__(parent)
-        self.rb_one_file = RadioButton('Input from one file')
-        self.rb_one_file.setChecked(True)
-        self.rb_seperated_files = RadioButton('Input separatedly')
-        self.input_label = QLabel('Choose input options:')
-        self.addWidget(self.input_label)
-        self.addWidget(self.rb_one_file)
-        self.addWidget(self.rb_seperated_files)
-
-class InputSingleFile(QWidget):
-    def __init__(self, parent=None):
-        super(InputSingleFile, self).__init__(parent)
-        layout = QHBoxLayout()
-        self.selectFile = PushButton('Choose file')
-        layout.addWidget(self.selectFile)
-        self.changeGraph = PushButton('Delete data')
-        layout.addWidget(self.changeGraph)
-        self.setLayout(layout)
-
-class InputSeparatedFiles(QWidget):
-    def __init__(self, parent=None):
-        super(InputSeparatedFiles, self).__init__(parent)
-        layout = QHBoxLayout(parent)
-        self.selectOuter = PushButton('Choose outer')
-        self.selectInner = PushButton('Choose inner')
-        layout.addWidget(self.selectOuter)
-        layout.addWidget(self.selectInner)
-        self.setLayout(layout)
 
 class Window(QWidget):
     def __init__(self):
@@ -69,11 +27,11 @@ class Window(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.graph_data = GraphData(None)
-        title = 'Foking automower'
+        self.graph_data = GraphData('')
+        title = 'Optimal coverage plan'
 
         self.setWindowTitle(title)
-        self.setGeometry(0, 0, 1000, 600)
+        self.setGeometry(0, 0, 1200, 800)
         self.setWindowIcon(QIcon('icon.png'))
 
         style = """
@@ -81,66 +39,58 @@ class Window(QWidget):
         margin: 0;
         padding: 0;
         """
+        
+
         self.setStyleSheet(style)
 
         layout = QVBoxLayout()
         layout.setSpacing(0)
         layout.setContentsMargins(0,0,0,0)
 
-        self.headerFrame = QFrame(self)
-        self.headerFrame.setStyleSheet('''
-        background-color: magenta;
-        ''')
-
-
+        ########################HEADER##############################
+        self.headerFrame = HeaderWidget()
+        header = self.headerFrame
+        header.settingsButton.clicked.connect(self.showsettings)
+        header.deleteGraphButton.clicked.connect(self.delete_graph_items)
+        header.backButton.clicked.connect(self.backtograph)
+        header.backButton.setEnabled(False)        
+        ######################################################
         
-        self.settingsArea = QHBoxLayout(self.headerFrame)
-        # self.settingsArea.setSpacing(0)
-        self.settingsArea.setAlignment(Qt.AlignLeft)
-
-        self.settingsToggle = QStackedWidget()
-
-        self.settingsButton = PushButton('Settings')
-        self.settingsButton.clicked.connect(self.showsettings)
-
-        # self.settingsButton.setAlignment(Qt.AlignRight)
-        
- 
-
-        self.backButton = PushButton("Back to graph")
-        self.backButton.clicked.connect(self.backtograph)
-
-        
-        # self.backButton.setAlignment(Qt.AlignRight)
-
-        self.settingsToggle.addWidget(self.settingsButton)
-        self.settingsToggle.addWidget(self.backButton)
-
-        # self.settingsArea.setAlignment(Qt.AlignRight)
-        self.settingsArea.addStretch(1)
-        self.settingsArea.addWidget(self.settingsToggle)
-        # self.settingsArea.addStretch(1)
 
         self.contentFrame = QFrame()
-        self.contentFrame.setStyleSheet('background: green;')
+        # self.contentFrame.setStyleSheet('border: 5px solid darkgray; border-top: none;')
+        self.contentFrame.setStyleSheet('border: none;')
 
         self.contentLayout = QHBoxLayout(self.contentFrame)
         self.contentLayout.setContentsMargins(0,0,0,0)
 
         self.contentStack = QStackedLayout()
+        # self.contentStack.setStyleSheet('border:none;')
         # self.contentStack.setSpacing(0)
         
-
+        self.graphWrapper = QWidget()
+        graphWrapperLayout = QVBoxLayout()
+        graphWrapperLayout.setContentsMargins(0,0,0,0)
+        graphLabel = QLabel('Visualization of the computed area:')
+        graphLabel.setContentsMargins(10,0,0,0)
+        graphLabel.setStyleSheet('''
+        font-size: 15px;
+        ''')
+        graphWrapperLayout.addWidget(graphLabel)
 
         self.graphWidget = pg.PlotWidget()
-        self.graphWidget.setAspectLocked()
+        # self.graphWidget.setAspectLocked()
         self.graphWidget.getPlotItem().hideAxis('bottom')
         self.graphWidget.getPlotItem().hideAxis('left')
         self.graphWidget.setMenuEnabled(False)
         self.graphWidget.setStyleSheet('''
-        border: 5px solid blue;
+        border-top: 5px solid darkgray;
         ''')
         self.graphWidget.setBackground(None)
+        self.graphWidget.setContentsMargins(0,0,0,0)
+
+        graphWrapperLayout.addWidget(self.graphWidget)
+        self.graphWrapper.setLayout(graphWrapperLayout)
 
         self.settingsMenu = QWidget()
         self.settingsWrapper = QWidget()
@@ -152,14 +102,73 @@ class Window(QWidget):
         # self.startButton.setAlignment(Qt.AlignHCenter)
         # self.startButton.setAlignment(Qt.AlignCenter)
 
-        self.startButton = PushButton('Start fucking ploting')
+        self.startButton = PushButton('Start plot')
         self.startButton.clicked.connect(self.set_complete_file)
-        self.testButton = PushButton("fockkin")
 
-        # settingsLayout.addStretch(1)
-        settingsLayout.addWidget(self.startButton)
-        settingsLayout.addWidget(self.testButton)
-        # settingsLayout.addStretch(1)
+        # self.startButton.setAlignment(Qt.AlignHCenter)
+
+        def widthInputCheck(text):
+            if text:
+                if ',' in text:
+                    out_text = text.replace(',','.')
+                    # print(f"changed text: {out_text}")
+                    # return text
+                else:
+                    out_text = text
+                self.graph_data.setWidth(float(out_text))
+                self.headerFrame.infoTable.width.setText(out_text)
+
+
+        onlyDouble = QDoubleValidator()
+        self.formGroupBox = QGroupBox()
+        layoutt = QFormLayout()
+
+        self.widthInput = QLineEdit('2')
+        widthInputCheck(self.widthInput.text())
+        self.widthInput.setValidator(onlyDouble)
+        self.widthInput.setAlignment(Qt.AlignHCenter)
+        self.widthInput.textChanged.connect(lambda text: widthInputCheck(text))
+
+
+        def threshInputCheck(text):
+            if text:
+                self.headerFrame.infoTable.thresh.setText(text)
+                out_text = text.replace(',','.')
+                out_text = float(out_text)
+                self.graph_data.setCoef(out_text)
+            else:
+                self.grap_data.setCoef(float('0,1'))
+                self.headerFrame.infoTable.thresh.setText('0,1')
+
+        self.threshInput = QLineEdit('0,1')
+        threshInputCheck(self.threshInput.text())
+        reg_ex = QRegExp("[0]+.?[0-9]{,2}")
+        threshValidator = QRegExpValidator(reg_ex,self.threshInput)
+        self.threshInput.setValidator(threshValidator)
+        self.threshInput.setAlignment(Qt.AlignHCenter)
+        self.threshInput.textChanged.connect(lambda text: threshInputCheck(text))
+
+
+
+        layoutt.addRow(QLabel("Thresh [m (<1)]:"), self.threshInput)
+        layoutt.addRow(QLabel("Width [m]:"), self.widthInput)
+        
+        self.formGroupBox.setLayout(layoutt)
+        self.formGroupBox.setStyleSheet('''
+        background: darkgrey;
+        border-radius: 10px;
+        font-size: 15px;
+        ''')
+        # self.formGroupBox.setAlignment(Qt.AlignHCenter)
+        
+        
+        settingsLayout.addStretch(1)
+
+        settingsLayout.addWidget(self.formGroupBox)
+        settingsLayout.addWidget(self.startButton, alignment=Qt.AlignHCenter)
+        # settingsLayout.addWidget(PushButton('some button more'))
+        settingsLayout.addStretch(1)
+        # settingsLayout.setAlignment(Qt.AlignHCenter)
         
 
         settingsWrapperLayout.addStretch(1)
@@ -168,9 +177,9 @@ class Window(QWidget):
 
         self.settingsMenu.setLayout(settingsWrapperLayout)
 
-
-        self.contentStack.addWidget(self.graphWidget)
         self.contentStack.addWidget(self.settingsMenu)
+        self.contentStack.addWidget(self.graphWrapper)
+        
 
         self.contentLayout.addLayout(self.contentStack)
 
@@ -185,55 +194,78 @@ class Window(QWidget):
 
         self.show()
 
+    def delete_graph_items(self):
+        self.delete_graph()
+        self.showsettings()
+        self.headerFrame.deleteGraphButton.setEnabled(False)
+        self.headerFrame.backButton.setEnabled(False)
+
     def backtograph(self):
-        print('Helo there')
-        self.settingsToggle.setCurrentWidget(self.settingsButton)
-        self.contentStack.setCurrentWidget(self.graphWidget)
+        # print('Helo there')
+        self.headerFrame.settingsToggle.setCurrentWidget(self.headerFrame.settingsButtons)
+        self.contentStack.setCurrentWidget(self.graphWrapper)
 
     def showsettings(self):
-        print('General Kenobi')
-        self.settingsToggle.setCurrentWidget(self.backButton)
+        # print('General Kenobi')
+        self.headerFrame.settingsToggle.setCurrentWidget(self.headerFrame.backButtonWidget)
         self.contentStack.setCurrentWidget(self.settingsMenu)
 
 
     #remove outer bounds 
-    def change_graph (self):
+    def delete_graph (self):
         self.graph_data.set_default()
-        print(self.graphWidget)
-        print(self.graphWidget.listDataItems()[0])
         for item in self.graphWidget.listDataItems():
-            # if item.name() == 'outer':
             self.graphWidget.removeItem(item)
 
     #check data types
-    def set_complete_file(self):    
+    def set_complete_file(self): 
+        self.delete_graph()  
         graph = self.graph_data
+        width = graph.width
+        coef = graph.coef
 
         if(self.get_graph_data()):
             graph.get_outer_inner()
 
             self.plot(graph.outer_plot[0],graph.outer_plot[1], 'b', 'outer')
 
-            for i in range(len(self.graph_data.inner_plot)):
-                self.plot(self.graph_data.inner_plot[i][0], self.graph_data.inner_plot[i][1], 'r', 'inner'+str(i))
+            for i in range(len(graph.inner_plot)):
+                self.plot(graph.inner_plot[i][0], graph.inner_plot[i][1], 'r', 'inner'+str(i))
 
-            tracks = ParalelTracks(self.graph_data.outer, self.graph_data.inner, 0.5)
+            # tracks = ParalelTracks(graph.outer, graph.inner, 1)
+            tracks = ParalelTracks(graph.outer, graph.inner, width)
             tracks.getUpperPoints()
-            
-            
-            for i in range(len(tracks.paralels)):
-                self.plot_upper(tracks.upper[i].point)
-
-            for i in range(len(tracks.paralels)):
-                self.plot(tracks.paralels[i][0],tracks.paralels[i][1], 'k', 'paralels'+str(i))
 
             arr = []
             for i in range(len(tracks.upper)):
                 arr.append((tracks.upper[i].point))
-            cluster(arr)
+            clusters = cluster(arr, width, coef)
+            number_of_clusters = str(max(clusters))
+            self.headerFrame.infoTable.countOfClusters.setText(number_of_clusters)
+            # print(f"Clusters looks like this: {clusters}")
+            # clusters = cluster(arr, width)
+            # print(f"Clusters looks like this: {clusters}")
 
-            #tady nastavit, ze to ma prehodit obe okna
+            colors = []
+            for i in range(max(clusters)):
+                colors.append(list(np.random.choice(range(256), size=3)))
+            # print(f"Focking colors are: {colors}")
+
+            for i in range(len(tracks.paralels)):
+                self.plot_upper(tracks.upper[i].point)
+
+            for i in range(len(tracks.paralels)):
+                # self.plot(tracks.paralels[i][0],tracks.paralels[i][1], 'k', 'paralels'+str(i))
+                # print(f"cluster inner: {clusters[i]}")
+                color = colors[clusters[i]-1]
+                self.plot(tracks.paralels[i][0],tracks.paralels[i][1], color, 'paralels'+str(i))
+
+            
+
             self.backtograph()
+            self.headerFrame.deleteGraphButton.setDisabled(False)
+            self.headerFrame.backButton.setDisabled(False)
+            self.graphWidget.getViewBox().enableAutoRange()
 
             
 
@@ -244,6 +276,29 @@ class Window(QWidget):
         fname = QFileDialog.getOpenFileName(self, 'Open file', home_dir)
         if fname[0]:
             self.graph_data.set_coords(fname[0])
+
+            name = []
+            for i in range(len(fname[0])):
+                name.append(fname[0][i])
+
+            name = name[::-1]
+            # print(f"backwards name of file: {name}")
+            file_name = []
+            for i in name:
+                if i != '/':
+                    file_name.append(i)
+                else:
+                    break
+            str1 = ''
+            file_name = file_name[::-1]
+            for i in file_name:
+                # print(f"iteration of file_name : {i}")
+                str1 += i
+                # print(f"str1 lookalike: {str1}")
+
+            # print(f"filename end: {str1}")
+
+            self.headerFrame.infoTable.fileName.setText(str1)
             return fname[0]
         else:
             return None

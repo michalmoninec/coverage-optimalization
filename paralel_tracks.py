@@ -35,6 +35,7 @@ class ParalelTracks():
         
         #TODO change to use minx in while loop
         x = minx
+        prubeh = 0
 
         while x < maxx:
             line = LineString([(x,miny),(x,maxy)])
@@ -64,21 +65,44 @@ class ParalelTracks():
                         ppoints = []
 
                         for i in range(len(inner)):
-                            if croped_line.intersects(inner[i]):
+                            if croped_line.intersects(inner[i]) and croped_line.intersection(inner[i]).geom_type=="LineString":
                                 intersected = True
                                 intersection = list(croped_line.intersection(inner[i]).coords)
+                                # print(f"intersection of simple line string: {intersection}")
                                 for k in range(len(intersection)):
                                     ppoints.append(intersection[k])
+                            # else:
+                                
+                            if croped_line.intersects(inner[i]) and croped_line.intersection(inner[i]).geom_type=="MultiLineString":
+                                # print(f"prubehove cislo: {prubeh}")
+                                # print('booha fucking zooha')
+                                intersected = True
+                                intersection = []
+                                # print(f"double intersection with inner: {croped_line.intersection(inner[i])}")
+                                for item in croped_line.intersection(inner[i]):
+                                    intersection.append(list(item.coords))
+                                # print(f"intersection of multilinestring: {intersection}")
+                                for k in range(len(intersection)):
+                                    for m in range(len(intersection[k])):
+                                        ppoints.append(intersection[k][m])
+                            
                         points = MultiPoint(ppoints)
+                        # print(f"multipoints point looks like this: {points}")
                                 
                         if intersected:
                             splitted = split(croped_line, points)
+                            # print(len(splitted))
+                            # print(f"lenght of splitted lines: {len(splitted)}")
 
                             for lin in splitted:
                                 contains = False
+                                
 
                                 for i in range (len(inner)):
-                                    if lin.intersects(inner[i]) and len(lin.intersection(inner[i]).coords)>1:
+                                    # if lin.intersects(inner[i]) and len(lin.intersection(inner[i]).coords)>1:
+                                    # print(f"type of intersection: {lin.intersection(inner[i])}")
+                                    if lin.intersects(inner[i]) and (lin.intersection(inner[i]).geom_type=='LineString'):
+                                        
                                         contains = True
                                     else:
                                         pass
@@ -91,6 +115,7 @@ class ParalelTracks():
                             paralels.append(intersect(intersected_points_iter))
                             self.paralels_raw.append(intersected_points_iter)
             x+=width
+            prubeh+=1
         self.paralels = paralels
 
     def getUpperPoints(self):

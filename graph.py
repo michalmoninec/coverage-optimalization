@@ -39,6 +39,7 @@ def trim_backwards(a_rr, norm):
         if line_intersection(trimmed_lines, arr[i], trimmed[-1]):
             # print('focking intersection!')
             trimmed.append(line_intersection(trimmed_lines, arr[i], trimmed[-1]))
+            break
         else:
             trimmed.append(arr[i])
             trimmed_lines.append(LineString([(trimmed[-1]),(trimmed[-2])]))
@@ -62,7 +63,7 @@ def get_closed_loops(data):
             elif len(adepts)<2:
                 adepts.append(data[i])
                 adepts_lines.append(LineString([(adepts[0]),(adepts[1])]))
-            elif line_intersection(adepts_lines, data[i], adepts[-1]) or (data[i] in adepts) :
+            elif line_intersection(adepts_lines, data[i], adepts[-1]) or (data[i] in adepts):
                 if data[i] in adepts:
                     normalized = deepcopy(adepts)
                     normalized.append(data[i])
@@ -86,6 +87,7 @@ def get_closed_loops(data):
 
             if i == len(data):
                 open = False
+
     return separated_loops
                 
     # endpoints = []
@@ -131,6 +133,8 @@ class GraphData():
         self.outer = []
         self.inner_plot = []
         self.file_name = file_name
+        self.width = None
+        self.coef = None
 
     def set_default(self):
         self.coords = []
@@ -139,9 +143,15 @@ class GraphData():
         self.inner_plot = []
         self.outer_plot = []
 
+    def setWidth(self,width):
+        self.width = width
 
+    def setCoef(self,coef):
+        self.coef = coef
     #handle different type of KML files
+
     def set_coords(self, file_name):
+        self.file_name = file_name
         with open(file_name) as f:
             doc = parser.parse(f).getroot()
 
