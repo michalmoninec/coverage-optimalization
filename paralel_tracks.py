@@ -1,5 +1,6 @@
 from shapely.geometry import Polygon, LineString, MultiPoint, Point
 from shapely.ops import split
+import math
 
 def intersect(arr):
     res = []
@@ -15,7 +16,7 @@ class UpperList():
         self.cluster = None
 
 class ParalelTracks():
-    def __init__(self, outer, inner_i, width) -> None:
+    def __init__(self, outer, inner_i, width, angle) -> None:
         super().__init__()
         self.outer = Polygon(outer)
         self.paralels = []
@@ -25,19 +26,31 @@ class ParalelTracks():
         for k in range(len(inner_i)):
             inner.append(Polygon(inner_i[k]))
         
-        self.main(width, inner)
+        self.main(width, inner, angle)
+        
+        print(f"this is angle: {angle}")
 
-    def main(self, width, inner):
+    def main(self, width, inner, angle):
         outer = self.outer
         minx, miny, maxx, maxy = outer.bounds
         paralels = []
+
+        pi = math.pi
+        angle_rad = angle * pi / 180
+
+        if angle != 180:
+            shift = (maxy-miny)/(math.tan(angle_rad))
+
+        print(f"shift {shift}")
+
+        print(f"angle in radians: {angle_rad}")
         
 
         x = minx
         prubeh = 0
 
-        while x < maxx:
-            line = LineString([(x,miny),(x,maxy)])
+        while x < (maxx+shift):
+            line = LineString([(x-shift,miny),(x,maxy)])
 
             if line.intersects(outer):
                 # intersected_points = None

@@ -135,6 +135,7 @@ class GraphData():
         self.file_name = file_name
         self.width = None
         self.coef = None
+        self.angle = None
 
     def set_default(self):
         self.coords = []
@@ -142,6 +143,9 @@ class GraphData():
         self.outer = []
         self.inner_plot = []
         self.outer_plot = []
+
+    def setAngle(self, angle):
+        self.angle = angle
 
     def setWidth(self,width):
         self.width = width

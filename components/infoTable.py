@@ -9,6 +9,7 @@ class InfoTable(QWidget):
         self.width = QLabel('')
         self.countOfClusters = QLabel('')
         self.thresh = QLabel('')
+        self.angle = QLabel('')
         self.build()
         self.setStyleSheet('''
         font-size: 15px;
@@ -46,6 +47,8 @@ class InfoTable(QWidget):
         
         layoutVert2.addWidget(self.addRow('Number of clusters:', self.countOfClusters))
         layoutVert2.addWidget(self.addRow('Thresh:', self.thresh))
+        layoutVert2.addWidget(self.addRow('Angle:', self.angle))
+
         Column2.setLayout(layoutVert2)
         Column2.setContentsMargins(0,0,0,0)
         layoutWrapper.addWidget(Column2)
