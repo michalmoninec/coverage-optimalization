@@ -19,7 +19,7 @@ class HeaderWidget(QWidget):
         self.infoTable = InfoTable()
         self.settingsButtons = QWidget()
         self.backButtonWidget = QWidget()
-
+        
         self.build()
 
     def build(self):

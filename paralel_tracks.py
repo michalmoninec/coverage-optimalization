@@ -31,9 +31,8 @@ class ParalelTracks():
         outer = self.outer
         minx, miny, maxx, maxy = outer.bounds
         paralels = []
-        # pararels_raw = []
         
-        #TODO change to use minx in while loop
+
         x = minx
         prubeh = 0
 
