@@ -49,7 +49,7 @@ def trim_backwards(a_rr, norm):
             
 #change as class function to GraphData
 def get_closed_loops(data):
-    print(f"delka dat na vstupu : {len(data)}")
+    # print(f"delka dat na vstupu : {len(data)}")
     separated_loops = []
     i = 0
     while i<(len(data)-1):
@@ -173,6 +173,12 @@ class GraphData():
 
         x, y, zn, zl = utm.from_latlon(
             np.array(coor_x[:]), np.array(coor_y[:]))
+            # np.round(np.array(coor_x[:]),4), np.round(np.array(coor_y[:]),4))
+
+        # x = np.round(np.array(x),5)
+        # y = np.round(np.array(y),5)
+
+        # print(f"vstup x> {x}")
 
         for i in range(len(x)):
             self.coords.append((x[i],y[i]))
@@ -247,29 +253,3 @@ class GraphData():
 
         for i in range(len(self.inner)):
             self.inner_plot.append(data_to_print(self.inner[i]))
-
-        # print(f"inner_plot: {self.inner_plot}")
-
-
-        # for i in range(len(closed_loops[0])):
-        #     coords = closed_loops[0][i]
-        #     outer_x.append(coords[0])
-        #     outer_y.append(coords[1])
-        #     self.outer.append((coords[0],coords[1]))
-        
-        # self.outer_plot = Coordinates(outer_x, outer_y)
-
-        # # self.border_outer.x = outer_x
-        # # self.border_outer.y = outer_y
-
-        # for k in range(1,len(closed_loops)):
-        #     inner = []
-        #     for i in range (len(closed_loops[k])):
-        #         coords = closed_loops[k][i]
-        #         inner.append((coords[0],coords[1]))
-        #         inner_x.append(coords[0])
-        #         inner_y.append(coords[1])
-        #     self.inner_plot.append(Coordinates(inner_x,inner_y))
-        #     self.inner.append(inner)
-        #     inner_y = []
-        #     inner_x = []

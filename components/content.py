@@ -34,7 +34,7 @@ class ContentWidget(QWidget):
         self.startButton = PushButton('Start plot')
         self.widthInput = QLineEdit('2')
         self.threshInput = QLineEdit('0,1')
-        self.angleInput = QLineEdit('90')
+        self.angleInput = QLineEdit('45')
 
         
 

@@ -147,29 +147,38 @@ class Window(QWidget):
             tracks = ParalelTracks(graph.outer, graph.inner, width, graph.angle)
             tracks.getUpperPoints()
 
-            arr = []
-            for i in range(len(tracks.upper)):
-                arr.append((tracks.upper[i].point))
-            clusters = cluster(arr, width, coef)
-            number_of_clusters = str(max(clusters))
-            self.headerFrame.infoTable.countOfClusters.setText(number_of_clusters)
-            # print(f"Clusters looks like this: {clusters}")
-            # clusters = cluster(arr, width)
-            # print(f"Clusters looks like this: {clusters}")
+            # arr = []
+            # for i in range(len(tracks.upper)):
+            #     arr.append((tracks.upper[i].point))
+                
+            # clusters = cluster(arr, width, coef)
+            # number_of_clusters = str(max(clusters))
+            # self.headerFrame.infoTable.countOfClusters.setText(number_of_clusters)
+            # # print(f"Clusters looks like this: {clusters}")
+            # # clusters = cluster(arr, width)
+            # # print(f"Clusters looks like this: {clusters}")
 
-            colors = []
-            for i in range(max(clusters)):
-                colors.append(list(np.random.choice(range(256), size=3)))
+            # colors = []
+            # for i in range(max(clusters)):
+            #     colors.append(list(np.random.choice(range(256), size=3)))
             # print(f"Focking colors are: {colors}")
 
-            for i in range(len(tracks.paralels)):
-                self.plot_upper(tracks.upper[i].point)
+            # for i in range(len(tracks.paralels)):
+            #     self.plot_upper(tracks.upper[i].point)
 
+
+            # for i in range(len(tracks.paralels_fake)):
+            #     # print(f"iteration of paralel tracks: {tracks.paralels[i]}")
+            #     # self.plot(tracks.paralels[i][0],tracks.paralels[i][1], 'k', 'paralels'+str(i))
+            #     # print(f"cluster inner: {clusters[i]}")
+            #     # color = colors[clusters[i]-1]
+            #     # self.plot(tracks.paralels[i][0],tracks.paralels[i][1], color, 'paralels'+str(i))
+                
+            #     self.plot(tracks.paralels_fake[i][0],tracks.paralels_fake[i][1], [0,0,0], 'paralels'+str(i))
+            
             for i in range(len(tracks.paralels)):
-                # self.plot(tracks.paralels[i][0],tracks.paralels[i][1], 'k', 'paralels'+str(i))
-                # print(f"cluster inner: {clusters[i]}")
-                color = colors[clusters[i]-1]
-                self.plot(tracks.paralels[i][0],tracks.paralels[i][1], color, 'paralels'+str(i))
+                self.plot(tracks.paralels[i][0],tracks.paralels[i][1], [0,150,0], 'paralels'+str(i))
+
 
 
 
