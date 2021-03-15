@@ -62,13 +62,12 @@ class ParalelTracks():
             end_border = maxy
             iter_coord = miny
             dir_addition = width
-            print("mel bych kreslit vodorovne")
+            # print("mel bych kreslit vodorovne")
 
         
 
-        print(f"shift {shift}")
-        print(f"dir_addiion {dir_addition}")
-        print(f'sin 90 {math.sin(90)}')
+        # print(f"shift {shift}")
+        # print(f"dir_addiion {dir_addition}")
         
 
 

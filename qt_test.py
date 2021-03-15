@@ -5,6 +5,9 @@ from components.pushButton import PushButton
 from components.header import HeaderWidget
 from components.content import ContentWidget
 
+from scripts.xmeans import xmeans_clustering
+from scripts.sub_areas import get_sub_areas
+
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QFileDialog, \
     QVBoxLayout, QWidget, QHBoxLayout, QMessageBox, QFrame, QRadioButton, QStackedWidget, \
@@ -133,7 +136,6 @@ class Window(QWidget):
         self.delete_graph()  
         graph = self.graph_data
         width = graph.width
-        coef = graph.coef
 
         if(self.get_graph_data()):
             graph.get_outer_inner()
@@ -143,44 +145,42 @@ class Window(QWidget):
             for i in range(len(graph.inner_plot)):
                 self.plot(graph.inner_plot[i][0], graph.inner_plot[i][1], 'r', 'inner'+str(i))
 
-            # tracks = ParalelTracks(graph.outer, graph.inner, 1)
             tracks = ParalelTracks(graph.outer, graph.inner, width, graph.angle)
             tracks.getUpperPoints()
 
-            # arr = []
-            # for i in range(len(tracks.upper)):
-            #     arr.append((tracks.upper[i].point))
-                
-            # clusters = cluster(arr, width, coef)
-            # number_of_clusters = str(max(clusters))
-            # self.headerFrame.infoTable.countOfClusters.setText(number_of_clusters)
-            # # print(f"Clusters looks like this: {clusters}")
-            # # clusters = cluster(arr, width)
-            # # print(f"Clusters looks like this: {clusters}")
+            arr = []
+            input_arr = []
 
-            # colors = []
-            # for i in range(max(clusters)):
-            #     colors.append(list(np.random.choice(range(256), size=3)))
-            # print(f"Focking colors are: {colors}")
-
-            # for i in range(len(tracks.paralels)):
-            #     self.plot_upper(tracks.upper[i].point)
+            for i in range(len(tracks.upper)):
+                arr.append((tracks.upper[i].point))
+                input_arr.append([tracks.upper[i].point[0],tracks.upper[i].point[1]])
 
 
-            # for i in range(len(tracks.paralels_fake)):
-            #     # print(f"iteration of paralel tracks: {tracks.paralels[i]}")
-            #     # self.plot(tracks.paralels[i][0],tracks.paralels[i][1], 'k', 'paralels'+str(i))
-            #     # print(f"cluster inner: {clusters[i]}")
-            #     # color = colors[clusters[i]-1]
-            #     # self.plot(tracks.paralels[i][0],tracks.paralels[i][1], color, 'paralels'+str(i))
-                
-            #     self.plot(tracks.paralels_fake[i][0],tracks.paralels_fake[i][1], [0,0,0], 'paralels'+str(i))
-            
-            for i in range(len(tracks.paralels)):
-                self.plot(tracks.paralels[i][0],tracks.paralels[i][1], [0,150,0], 'paralels'+str(i))
+            clusters, clusters_count = xmeans_clustering(input_arr, 5)
+
+            colors = []
+            for i in range(clusters_count):
+                colors.append(list(np.random.choice(range(255), size=3)))
+
+            sub_areas = get_sub_areas(tracks.paralels, clusters, self.plot, self.plot_upper)
+            # print(f"first item of subset : {sub_areas[0]}")
+            # print(f"first item: {sub_areas[0]}")
+
+            # for i in range(len(sub_areas[0])):
+            #     self.plot(sub_areas[0][i][0],sub_areas[0][i][1], [0,0,150], 'solo item')
+                # pass
+
+            # print(f"point: {sub_areas[0][0][0][0]}")
 
 
+            # for i in range(clusters_count):
+            #     color = colors[i]
+            #     for k in range(len(clusters[i])):
+            #         self.plot(tracks.paralels[clusters[i][k]][0],tracks.paralels[clusters[i][k]][1], color, "plot")
+            #         self.plot_upper(tracks.upper[clusters[i][k]].point, color)
 
+
+            # print(f'paralel tracks: {tracks.paralels}')
 
             self.backtograph()
             self.headerFrame.deleteGraphButton.setDisabled(False)
@@ -252,10 +252,10 @@ class Window(QWidget):
         pen = pg.mkPen(color=color)
         self.contentFrame.graphWidget.plot(x, y, name=name, pen=pen)
 
-    def plot_upper(self,point):
+    def plot_upper(self ,point, color):
         # print(f"tady to dojde : {point[0]}")
         # pen = pg.mkPen(color="r")
-        self.contentFrame.graphWidget.plot([point[0]],[point[1]], name="another", pen=None, symbol='o', symbolPen=pg.mkPen(color=(0, 0, 255), width=0),symbolBrush=pg.mkBrush(0, 0, 255, 255),symbolSize=7)
+        self.contentFrame.graphWidget.plot([point[0]],[point[1]], name="another", pen=None, symbol='o', symbolPen=pg.mkPen(color=color, width=0), symbolBrush=pg.mkBrush(color),symbolSize=7)
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)
