@@ -29,6 +29,7 @@ class ContentWidget(QWidget):
 
         self.graphWrapper = QWidget()
         self.graphWidget = pg.PlotWidget()
+        self.graphWidget2 = pg.PlotWidget()
 
         self.settingsMenu = QWidget()
         self.startButton = PushButton('Start plot')
@@ -63,9 +64,19 @@ class ContentWidget(QWidget):
         self.graphWidget.setBackground(None)
         self.graphWidget.setContentsMargins(0,0,0,0)
 
+        self.graphWidget2.getPlotItem().hideAxis('bottom')
+        self.graphWidget2.getPlotItem().hideAxis('left')
+        self.graphWidget2.setMenuEnabled(False)
+        self.graphWidget2.setStyleSheet('''
+        border-top: 5px solid darkgray;
+        ''')
+        self.graphWidget2.setBackground(None)
+        self.graphWidget2.setContentsMargins(0,0,0,0)
+
 
         graphWrapperLayout.addWidget(graphLabel)
         graphWrapperLayout.addWidget(self.graphWidget)
+        graphWrapperLayout.addWidget(self.graphWidget2)
         self.graphWrapper.setLayout(graphWrapperLayout)
 
         settingsWrapperLayout = QHBoxLayout()

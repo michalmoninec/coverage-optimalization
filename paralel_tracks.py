@@ -214,6 +214,7 @@ class ParalelTracks():
             iter_coord += dir_addition
             # prubeh+=1
         self.paralels = paralels
+        # print(f"paralels: {self.paralels}")
         # self.paralels_fake = paralels_fake
 
     def getUpperPoints(self):

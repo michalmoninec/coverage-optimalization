@@ -6,7 +6,7 @@ from components.header import HeaderWidget
 from components.content import ContentWidget
 
 from scripts.xmeans import xmeans_clustering
-from scripts.sub_areas import get_sub_areas
+from scripts.sub_areas import Areas
 
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QFileDialog, \
@@ -141,11 +141,17 @@ class Window(QWidget):
             graph.get_outer_inner()
 
             self.plot(graph.outer_plot[0],graph.outer_plot[1], 'b', 'outer')
+            self.plot_second(graph.outer_plot[0],graph.outer_plot[1], 'b', 'outer')
 
             for i in range(len(graph.inner_plot)):
                 self.plot(graph.inner_plot[i][0], graph.inner_plot[i][1], 'r', 'inner'+str(i))
+                self.plot_second(graph.inner_plot[i][0], graph.inner_plot[i][1], 'r', 'inner'+str(i))
 
+
+            # print(f'graph outer: {graph.outer}')
+            # print(f"graph inner : {graph.inner}")
             tracks = ParalelTracks(graph.outer, graph.inner, width, graph.angle)
+            # print(f"tracks lookalike: {tracks.paralels}")
             tracks.getUpperPoints()
 
             arr = []
@@ -156,28 +162,57 @@ class Window(QWidget):
                 input_arr.append([tracks.upper[i].point[0],tracks.upper[i].point[1]])
 
 
-            clusters, clusters_count = xmeans_clustering(input_arr, 5)
+            clusters, clusters_count, centers = xmeans_clustering(input_arr, 5)
+
+            objects = [graph.outer]
+            for item in graph.inner:
+                objects.append(item)
+
+            areas = Areas(tracks.paralels, clusters, objects)
+
+            areas_after_change = areas.split_by_different_objects()
 
             colors = []
-            for i in range(clusters_count):
+            for i in range(len(areas_after_change)):
                 colors.append(list(np.random.choice(range(255), size=3)))
 
-            sub_areas = get_sub_areas(tracks.paralels, clusters, self.plot, self.plot_upper)
-            # print(f"first item of subset : {sub_areas[0]}")
-            # print(f"first item: {sub_areas[0]}")
+            # sub_areas = get_sub_areas(tracks.paralels, clusters, self.plot, self.plot_upper)
+            objects = [graph.outer]
+            for item in graph.inner:
+                objects.append(item)
 
-            # for i in range(len(sub_areas[0])):
-            #     self.plot(sub_areas[0][i][0],sub_areas[0][i][1], [0,0,150], 'solo item')
-                # pass
+            # for i in range(len(areas.areas[0])):
+            #     parallel = areas.areas[0][i]
+            #     # print(f"upper point group of parallel is: {parallel.upper_group}")
+            #     # print(f"lower point group of parallel is: {parallel.lower_group}")
+            #     self.plot_upper(parallel.upper_point, [255,255,255])
+            #     self.plot_second((parallel.upper_point[0],parallel.lower_point[0]),(parallel.upper_point[1],parallel.lower_point[1]) , [0,0,0], "plot")
 
-            # print(f"point: {sub_areas[0][0][0][0]}")
 
 
-            # for i in range(clusters_count):
-            #     color = colors[i]
-            #     for k in range(len(clusters[i])):
-            #         self.plot(tracks.paralels[clusters[i][k]][0],tracks.paralels[clusters[i][k]][1], color, "plot")
-            #         self.plot_upper(tracks.upper[clusters[i][k]].point, color)
+
+            print(len(areas_after_change))
+            for i in range(len(areas_after_change)):
+                area = areas_after_change[i]
+                for k in range(len(area)):
+                    parallel = area[k]
+                    self.plot_second((parallel.upper_point[0],parallel.lower_point[0]),(parallel.upper_point[1],parallel.lower_point[1]) , colors[i], "plot")
+                    self.plot_upper_second(parallel.upper_point, colors[i])
+
+
+            for i in range(clusters_count):
+                color = colors[i]
+                for k in range(len(clusters[i])):
+                    self.plot(tracks.paralels[clusters[i][k]][0],tracks.paralels[clusters[i][k]][1], color, "plot")
+                    # self.plot_second(tracks.paralels[clusters[i][k]][0],tracks.paralels[clusters[i][k]][1], color, "plot")
+                    self.plot_upper(tracks.upper[clusters[i][k]].point, color)
+                    # self.plot_upper_second(tracks.upper[clusters[i][k]].point, color)
+                    self.plot_center(centers[i], color)
+
+            # for i in range(len(areas.areas[0])):
+            #     parallel = areas.areas[0][i]
+            #     print(f"upper point of parallel is: {parallel.upper_point}")
+            #     self.plot_upper(parallel.upper_point, [255,255,255])
 
 
             # print(f'paralel tracks: {tracks.paralels}')
@@ -249,14 +284,27 @@ class Window(QWidget):
 
     #looks good
     def plot(self, x, y, color, name):
-        pen = pg.mkPen(color=color)
+        pen = pg.mkPen(color=color, width=2)
         self.contentFrame.graphWidget.plot(x, y, name=name, pen=pen)
+
+    def plot_second(self, x, y, color, name):
+        pen = pg.mkPen(color=color, width=2)
+        self.contentFrame.graphWidget2.plot(x, y, name=name, pen=pen)
+
+    def plot_upper_second(self ,point, color):
+        # print(f"tady to dojde : {point[0]}")
+        # pen = pg.mkPen(color="r")
+        self.contentFrame.graphWidget2.plot([point[0]],[point[1]], name="another", pen=None, symbol='o', symbolPen=pg.mkPen(color=color, width=0), symbolBrush=pg.mkBrush(color),symbolSize=7)
+
 
     def plot_upper(self ,point, color):
         # print(f"tady to dojde : {point[0]}")
         # pen = pg.mkPen(color="r")
         self.contentFrame.graphWidget.plot([point[0]],[point[1]], name="another", pen=None, symbol='o', symbolPen=pg.mkPen(color=color, width=0), symbolBrush=pg.mkBrush(color),symbolSize=7)
-        
+
+    def plot_center(self, point, color):
+        self.contentFrame.graphWidget.plot([point[0]],[point[1]], pen=None, symbol='+', symbolPen=pg.mkPen(color=color, width=0), symbolBrush=pg.mkBrush(color),symbolSize=10)
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = Window()

@@ -28,11 +28,6 @@
 
 # arr = [1,2,3,4,5]
 # print(arr[-2])
-
-i = 0
-while i < 5:
-    print(i)
-    if i == 2:
-        pass
-    else:
-        i+=1
+a = [0,1,2,3,4]
+a = [x+1 for x in a]
+print(a)

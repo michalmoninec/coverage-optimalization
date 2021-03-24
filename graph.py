@@ -175,8 +175,8 @@ class GraphData():
             np.array(coor_x[:]), np.array(coor_y[:]))
             # np.round(np.array(coor_x[:]),4), np.round(np.array(coor_y[:]),4))
 
-        # x = np.round(np.array(x),5)
-        # y = np.round(np.array(y),5)
+        x = np.round(np.array(x),4)
+        y = np.round(np.array(y),4)
 
         # print(f"vstup x> {x}")
 
