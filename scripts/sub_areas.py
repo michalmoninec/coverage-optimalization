@@ -1,5 +1,7 @@
 from paralel_tracks import UpperList
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point, Polygon, LineString, linestring
+
+from copy import deepcopy
 
 def partition(alist, indices):
     return [alist[i:j] for i, j in zip([0]+indices, indices+[None])]
@@ -12,6 +14,8 @@ class ParallelLine():
         
         self.upper_group = self.set_group(upper, objects)
         self.lower_group = self.set_group(lower, objects)
+
+        self.line = LineString([Point(self.upper_point), Point(self.lower_point)])
 
         
 
@@ -29,6 +33,7 @@ class Areas():
         super().__init__()
         self.get_sub_areas(tracks, clusters, objects)
         self.split_by_different_objects()
+        self.check_neighbours()
 
     def get_sub_areas(self, tracks, clusters, objects):
         sub_areas = []
@@ -91,5 +96,91 @@ class Areas():
         self.split_by_upper_objects()
         self.split_by_lower_objects()
         return self.areas
+
+    def is_identical(self, line1, line2):
+        if (Point(line1.upper_point).distance(Point(line2.lower_point))) > (Point(line1.lower_point).distance(Point(line2.upper_point))):
+            point1 = line1.upper_point
+            point2 = line2.lower_point
+            line = LineString([Point(point1), Point(point2)])
+            if line.distance(Point(line1.lower_point))>0.00001 and line.distance(Point(line2.upper_point))>0.00001:
+                return False
+            else:
+                return True
+        else:
+            point1 = line1.lower_point
+            point2 = line2.upper_point
+            line = LineString([Point(point1), Point(point2)])
+            if line.distance(Point(line1.upper_point))>0.00001 and line.distance(Point(line2.lower_point))>0.00001:
+                return False
+            else:
+                return True
+        
+            
+    def equidistant_and_not_identical(self, area):
+        valid = True
+        for i in range(len(area)-1):
+            line = area[i].line
+            line_next = area[i+1].line
+            diff = 0.00001
+            if (line.distance(line_next) - 0.5)>diff or self.is_identical(area[i], area[i+1]):
+                valid = False
+        return valid
+
+
+    def check_neighbours(self):
+        areas_output = []
+        for area in self.areas:
+            right_lines = self.equidistant_and_not_identical(area)
+            if right_lines:
+                areas_output.append(area)
+            else:
+                print(f'I should update this cluster!')
+                areas_to_append = []
+                while not self.equidistant_and_not_identical(area):
+                    area_copy = area.copy()
+                    counter = 0
+                    i = 0
+                    while i < (len(area_copy)-1):
+                        print(f'inner len of area: {len(area_copy)}')
+                        print('progress...')
+                        line = area_copy[i].line
+                        line_next = area_copy[i+1].line
+                        diff = 0.00001
+                        if (line.distance(line_next) - 0.5)>diff or self.is_identical(area_copy[i], area_copy[i+1]):
+                            print('nok, will pop')
+                            area_copy.pop(i+1)
+                            i = i - 1
+                        else:
+                            # print('ok, will apend')
+                            # area_item.append(area_copy[i+1])
+                            i = i + 1
+                        print(f"count of counter: {counter}")
+                        # if i == len(area_copy):
+                        #     break
+
+
+                    for k in range(len(area_copy)):
+                        print(f'iteration of popping {k}')
+                        area.pop(area.index(area_copy[k]))
+
+                    
+                    areas_to_append.append(area_copy)
+
+                    if self.equidistant_and_not_identical(area):
+                        areas_to_append.append(area)
+
+                    if len(area) == 0 :
+                        break
+                    
+                for item in areas_to_append:
+                    areas_output.append(item)
+
+        self.areas = areas_output
+        return self.areas
+        
+
+
+
+                
 
 

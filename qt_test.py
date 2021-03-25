@@ -128,8 +128,10 @@ class Window(QWidget):
     #remove outer bounds 
     def delete_graph (self):
         self.graph_data.set_default()
-        for item in self.contentFrame.graphWidget.listDataItems():
-            self.contentFrame.graphWidget.removeItem(item)
+        # for item in self.contentFrame.graphWidget.listDataItems():
+        #     self.contentFrame.graphWidget.removeItem(item)
+        self.contentFrame.graphWidget.clear()
+        self.contentFrame.graphWidget2.clear()
 
     #check data types
     def set_complete_file(self): 
@@ -171,9 +173,13 @@ class Window(QWidget):
             areas = Areas(tracks.paralels, clusters, objects)
 
             areas_after_change = areas.split_by_different_objects()
+            areas_after_check2 = areas.check_neighbours()
 
             colors = []
-            for i in range(len(areas_after_change)):
+            # for i in range(len(areas_after_change)):
+            #     colors.append(list(np.random.choice(range(255), size=3)))
+
+            for i in range(len(areas_after_check2)):
                 colors.append(list(np.random.choice(range(255), size=3)))
 
             # sub_areas = get_sub_areas(tracks.paralels, clusters, self.plot, self.plot_upper)
@@ -191,9 +197,17 @@ class Window(QWidget):
 
 
 
-            print(len(areas_after_change))
-            for i in range(len(areas_after_change)):
-                area = areas_after_change[i]
+            # print(f"number of post processed clusters: {len(areas_after_change)}")
+            # for i in range(len(areas_after_change)):
+            #     area = areas_after_change[i]
+            #     for k in range(len(area)):
+            #         parallel = area[k]
+            #         self.plot_second((parallel.upper_point[0],parallel.lower_point[0]),(parallel.upper_point[1],parallel.lower_point[1]) , colors[i], "plot")
+            #         self.plot_upper_second(parallel.upper_point, colors[i])
+            
+            print(f"number of post processed clusters: {len(areas_after_check2)}")
+            for i in range(len(areas_after_check2)):
+                area = areas_after_check2[i]
                 for k in range(len(area)):
                     parallel = area[k]
                     self.plot_second((parallel.upper_point[0],parallel.lower_point[0]),(parallel.upper_point[1],parallel.lower_point[1]) , colors[i], "plot")
