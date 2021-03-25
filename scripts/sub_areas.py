@@ -141,8 +141,8 @@ class Areas():
                     counter = 0
                     i = 0
                     while i < (len(area_copy)-1):
-                        print(f'inner len of area: {len(area_copy)}')
-                        print('progress...')
+                        # if i == (len(area_copy)-1):
+                        #     areas_to_append.append([area_copy])
                         line = area_copy[i].line
                         line_next = area_copy[i+1].line
                         diff = 0.00001
@@ -150,6 +150,8 @@ class Areas():
                             print('nok, will pop')
                             area_copy.pop(i+1)
                             i = i - 1
+                            if i < 0:
+                                i = 0
                         else:
                             # print('ok, will apend')
                             # area_item.append(area_copy[i+1])
@@ -169,9 +171,8 @@ class Areas():
                     if self.equidistant_and_not_identical(area):
                         areas_to_append.append(area)
 
-                    if len(area) == 0 :
-                        break
-                    
+
+
                 for item in areas_to_append:
                     areas_output.append(item)
 
