@@ -1,5 +1,10 @@
+from random import paretovariate
+from itertools import chain
+
 from paralel_tracks import UpperList
-from shapely.geometry import Point, Polygon, LineString, linestring
+from shapely.geometry import Point, Polygon, LineString, MultiPoint, LinearRing
+from shapely.ops import split, snap, nearest_points
+
 
 from copy import deepcopy
 
@@ -29,11 +34,17 @@ class ParallelLine():
 
 
 class Areas():
-    def __init__(self, tracks, clusters, objects) -> None:
+    def __init__(self, tracks, clusters, objects, width, plot_print, outer_index) -> None:
         super().__init__()
+        self.graph_width = width
         self.get_sub_areas(tracks, clusters, objects)
         self.split_by_different_objects()
-        self.check_neighbours()
+        self.check_neighbours(width)
+        self.split_by_convex(objects, plot_print, outer_index)
+
+        
+        # self.plot_print = plot_print
+
 
     def get_sub_areas(self, tracks, clusters, objects):
         sub_areas = []
@@ -127,14 +138,14 @@ class Areas():
         return valid
 
 
-    def check_neighbours(self):
+    def check_neighbours(self, width):
         areas_output = []
         for area in self.areas:
             right_lines = self.equidistant_and_not_identical(area)
             if right_lines:
                 areas_output.append(area)
             else:
-                print(f'I should update this cluster!')
+                # print(f'I should update this cluster!')
                 areas_to_append = []
                 while not self.equidistant_and_not_identical(area):
                     area_copy = area.copy()
@@ -146,8 +157,8 @@ class Areas():
                         line = area_copy[i].line
                         line_next = area_copy[i+1].line
                         diff = 0.00001
-                        if (line.distance(line_next) - 0.5)>diff or self.is_identical(area_copy[i], area_copy[i+1]):
-                            print('nok, will pop')
+                        if (line.distance(line_next) - width)>diff or self.is_identical(area_copy[i], area_copy[i+1]):
+                            # print('nok, will pop')
                             area_copy.pop(i+1)
                             i = i - 1
                             if i < 0:
@@ -156,13 +167,13 @@ class Areas():
                             # print('ok, will apend')
                             # area_item.append(area_copy[i+1])
                             i = i + 1
-                        print(f"count of counter: {counter}")
+                        # print(f"count of counter: {counter}")
                         # if i == len(area_copy):
                         #     break
 
 
                     for k in range(len(area_copy)):
-                        print(f'iteration of popping {k}')
+                        # print(f'iteration of popping {k}')
                         area.pop(area.index(area_copy[k]))
 
                     
@@ -178,6 +189,121 @@ class Areas():
 
         self.areas = areas_output
         return self.areas
+
+    def center_outside(self, points, object, outer_index, obj_index):
+        p1 = points[0]
+        p2 = points[1]
+        line = LineString([Point(p1), Point(p2)])
+        midpoint = line.interpolate(0.5, normalized=True)
+        if object.contains(midpoint):
+            if obj_index == outer_index:
+                return False
+            else:
+                # print('center inside = true, object is outer')
+                return True
+        else:
+            if obj_index == outer_index:
+                # print('center outside = true, object is outer')
+                return True
+            else:
+                return False
+
+
+    def distance_not_in_bounds(self, points):
+        p1 = points[0]
+        p2 = points[1]
+        width = self.graph_width
+        coef = 2
+        dist = coef * width
+
+        if p1.distance(p2) > dist:
+            # print('Distance is out of bounds')
+            return True
+
+        else:
+            return False
+
+    def next_point_collision(self, area, objects, plot_print, outer_index):
+        counter = 0
+        good = True
+        print(50*'-')
+        obj_upper = Polygon(objects[area[0].upper_group])
+        obj_lower = Polygon(objects[area[0].lower_group])
+        obj_upper_index = area[0].upper_group
+        obj_lower_index = area[0].lower_group
+
+        split_indexes = []
+
+        for i in range(len(area)-1):
+            parallel = area[i]
+            parallel_next = area[i+1]
+
+            upper_points = MultiPoint([parallel.upper_point, parallel_next.upper_point])
+            lower_points = MultiPoint([parallel.lower_point, parallel_next.lower_point])
+
+            obj_upper = snap(obj_upper, upper_points, 0.0000001)
+            obj_lower = snap(obj_lower, lower_points, 0.0000001)
+
+            ring_upper = LinearRing(list(obj_upper.exterior.coords))
+            ring_lower = LinearRing(list(obj_lower.exterior.coords))
+
+            line_upper = LineString(upper_points)
+            line_lower = LineString(lower_points)
+
+            if ring_upper.intersects(line_upper):
+                intersection = ring_upper.intersection(line_upper)
+                # print(f"type of intersection : {intersection.geom_type}")
+                if intersection.geom_type != "LineString" and (self.center_outside(upper_points, obj_upper, outer_index, obj_upper_index or len(intersection)>2)) and self.distance_not_in_bounds(upper_points):
+                    # plot_print((parallel.upper_point[0],parallel_next.upper_point[0]),(parallel.upper_point[1],parallel_next.upper_point[1]), [150,0,0], 'heisenberg')
+                    good = False
+                    if i not in split_indexes:
+                        split_indexes.append(i)
+
+            if ring_lower.intersects(line_lower):
+                intersection = ring_lower.intersection(line_lower)
+                print(f"type of intersection : {intersection.geom_type}")
+                # if intersection.geom_type != "LineString" and self.center_outside(lower_points, obj_lower, outer_index, obj_lower_index) and self.distance_not_in_bounds(lower_points):
+                if intersection.geom_type != "LineString" and (self.center_outside(lower_points, obj_lower, outer_index, obj_lower_index) or len(intersection)>2) and self.distance_not_in_bounds(lower_points) :
+                    # print(f"len of intersection: {len(intersection)}")
+                    # print(5*"dostanu se tadz kokote")
+                    good = False
+                    if i not in split_indexes:
+                        split_indexes.append(i)
+        return split_indexes
+
+        # if good:
+        #     return area
+        # else:
+        #     return None
+    def partition(self, alist, indices):
+        pairs = zip(chain([0], indices), chain(indices, [None]))
+        return (alist[i:j] for i, j in pairs)
+
+    def split_by_convex(self, objects, plot_print, outer_index):
+        areas = self.areas
+        output_areas = []
+        
+        for area in areas:
+            indexes = self.next_point_collision(area, objects, plot_print, outer_index)
+            indexes = [x+1 for x in indexes]
+            if len(indexes)<1:
+                output_areas.append(area)
+            else:
+                print(f'splitting indexes: {indexes}')
+                new_ones = self.partition(area, indexes)
+                print(f"new areas to append: {new_ones}")
+                for item in new_ones:
+                    print(f"item looks: {item}")
+                    output_areas.append(item)
+        
+        self.areas = output_areas
+
+            
+            
+
+
+        
+
         
 
 

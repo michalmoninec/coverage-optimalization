@@ -170,16 +170,19 @@ class Window(QWidget):
             for item in graph.inner:
                 objects.append(item)
 
-            areas = Areas(tracks.paralels, clusters, objects)
+            areas = Areas(tracks.paralels, clusters, objects, width, self.plot_second, graph.outer_index)
 
-            areas_after_change = areas.split_by_different_objects()
-            areas_after_check2 = areas.check_neighbours()
+            # areas_after_change = areas.split_by_different_objects()
+            # areas_after_check2 = areas.check_neighbours(width)
+            areas_after_check2 = areas.areas
+            areas_test = areas.areas
 
             colors = []
             # for i in range(len(areas_after_change)):
             #     colors.append(list(np.random.choice(range(255), size=3)))
 
-            for i in range(len(areas_after_check2)):
+            # for i in range(len(areas_after_check2)):
+            for i in range(100):
                 colors.append(list(np.random.choice(range(255), size=3)))
 
             # sub_areas = get_sub_areas(tracks.paralels, clusters, self.plot, self.plot_upper)
@@ -210,18 +213,25 @@ class Window(QWidget):
                 area = areas_after_check2[i]
                 for k in range(len(area)):
                     parallel = area[k]
+                    self.plot((parallel.upper_point[0],parallel.lower_point[0]),(parallel.upper_point[1],parallel.lower_point[1]) , colors[i], "plot")
+                    self.plot_upper(parallel.upper_point, colors[i])
+
+            for i in range(len(areas_test)):
+                area = areas_test[i]
+                for k in range(len(area)):
+                    parallel = area[k]
                     self.plot_second((parallel.upper_point[0],parallel.lower_point[0]),(parallel.upper_point[1],parallel.lower_point[1]) , colors[i], "plot")
                     self.plot_upper_second(parallel.upper_point, colors[i])
 
 
-            for i in range(clusters_count):
-                color = colors[i]
-                for k in range(len(clusters[i])):
-                    self.plot(tracks.paralels[clusters[i][k]][0],tracks.paralels[clusters[i][k]][1], color, "plot")
-                    # self.plot_second(tracks.paralels[clusters[i][k]][0],tracks.paralels[clusters[i][k]][1], color, "plot")
-                    self.plot_upper(tracks.upper[clusters[i][k]].point, color)
-                    # self.plot_upper_second(tracks.upper[clusters[i][k]].point, color)
-                    self.plot_center(centers[i], color)
+            # for i in range(clusters_count):
+            #     color = colors[i]
+            #     for k in range(len(clusters[i])):
+            #         self.plot(tracks.paralels[clusters[i][k]][0],tracks.paralels[clusters[i][k]][1], color, "plot")
+            #         # self.plot_second(tracks.paralels[clusters[i][k]][0],tracks.paralels[clusters[i][k]][1], color, "plot")
+            #         self.plot_upper(tracks.upper[clusters[i][k]].point, color)
+            #         # self.plot_upper_second(tracks.upper[clusters[i][k]].point, color)
+            #         self.plot_center(centers[i], color)
 
             # for i in range(len(areas.areas[0])):
             #     parallel = areas.areas[0][i]

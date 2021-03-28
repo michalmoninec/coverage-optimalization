@@ -238,6 +238,9 @@ class GraphData():
         # print(f"polygons of closed loops: {polygons.index(max(polygons))}")
         # print(f"polygons areas: {polygons[0].area}")
         outer_index = polygons.index(max(polygons))
+        self.outer_index = outer_index
+
+        # print(f'outer_index: {outer_index}')
 
         for i in range(len(closed_loops)):
             if i == outer_index:
