@@ -76,7 +76,7 @@ def xmeans_clustering(data, max_count):
     # print(f"centers loooks liike: {centers}")
     # print(f"clusters looks like: {clusters}")
 
-    print(f"number of clusters: {len(clusters)}")
+    # print(f"Total number of clusters is: {len(clusters)}")
     clusters_count = len(clusters)
 
     return clusters, clusters_count, centers

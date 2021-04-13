@@ -1,33 +1,12 @@
-# a = []
-# a.append([1,2])
-# a.append([2,2])
-# a.append(2)
-# a.append((1,2))
-# print(a)
-# if [1,2] in a:
-#     print(True)
+import xlwt
+from xlwt import Workbook
+from random import random, choices, shuffle, randint, randrange
 
-# class coords:  
-#     def __init__(self, x, y):  
-#         self.x = x  
-#         self.y= y 
-   
-# list = []
 
-# list.append(coords(1,2))
-# list.append(coords(1,2))
-# list.append(coords(1,2))
+a = [0,1,2,3,4,5,6]
 
-# def kokot():
-#     for i in range(5):
-#         if i == 2:
-#             return (print('output'))
-#         print(i)
+v = [ 2, 4,5]
 
-# kokot()
+v += [item for item in a]
 
-# arr = [1,2,3,4,5]
-# print(arr[-2])
-a = [0,1,2,3,4]
-a = [x+1 for x in a]
-print(a)
+print(f'focking {v}')

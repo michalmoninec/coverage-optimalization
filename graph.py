@@ -186,46 +186,6 @@ class GraphData():
         self.file_name = file_name
 
 
-    #hardcoded, try some sofisticated way
-    #leave like that for now
-    def check_closed_loop(self,x, y):
-        pass
-        # closed_loop = []
-        
-        # for i in range (len(x)):
-        #     if [x[i],y[i]] in closed_loop:
-        #         closed_loop.append([x[i],y[i]])
-        #         return closed_loop
-        #     else:
-        #         closed_loop.append([x[i],y[i]])
-        # return None
-        
-    #bad data types, switch to array of points instead
-    #check all inner loops
-    def check_inner_validity(self):
-        pass
-        # outer_set = []
-        # inner_set = []
-
-        # for i in range (len(self.border_outer.x)):
-        #     outer_set.append((self.border_outer.x[i],self.border_outer.y[i]))
-
-        # for i in range (len(self.coords.x)):
-        #     inner_set.append((self.coords.x[i],self.coords.y[i]))
-        
-        # outer_polygon = Polygon(outer_set)
-        # inner_polygon = Polygon(inner_set)
-
-        # x, y = outer_polygon.exterior.coords.xy
-
-        # if outer_polygon.contains(inner_polygon):
-        #     return True
-        # else:
-        #     return False
-
-    #change to loop through closed loops and find outer polygons
-    #handle outer border properly, HARDCODED AF
-    #check if outer contains all of inner loops
     def get_outer_inner(self):
         closed_loops = get_closed_loops(self.coords)
         # print(f"closed loops: {closed_loops}")
@@ -256,3 +216,7 @@ class GraphData():
 
         for i in range(len(self.inner)):
             self.inner_plot.append(data_to_print(self.inner[i]))
+
+    def scale_inner(self):
+        inner = self.inner
+        

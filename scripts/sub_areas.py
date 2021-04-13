@@ -1,5 +1,6 @@
 from random import paretovariate
 from itertools import chain
+import math
 
 from paralel_tracks import UpperList
 from shapely.geometry import Point, Polygon, LineString, MultiPoint, LinearRing
@@ -32,19 +33,135 @@ class ParallelLine():
                 return index
         # print(f"hello there, general number of objects: {len(objects)}")
 
+class SubArea():
+    def __init__(self, parallels) -> None:
+        super().__init__()
+        self.parallels = parallels
+        self.end_points = self.get_points()
+        self.paths = self.generate_paths()
+        self.node_states = self.get_node_states()
+
+        self.comptue_path_length()
+
+
+    def get_points(self):
+        points = []
+        parallels = self.parallels
+
+        points.append(parallels[0].upper_point)
+        points.append(parallels[0].lower_point)
+
+        if len(parallels)>1:
+            points.append(parallels[-1].upper_point)
+            points.append(parallels[-1].lower_point)
+        
+        # for item in points:
+        #     print(f"end point item {item}")
+        # print(10*'=')
+        return points
+    
+    def generate_paths(self):
+        paths = []
+        parallels = self.parallels
+        end_points = self.end_points
+
+        for i in range(len(end_points)):
+            path = []
+            parallels_path = parallels.copy()
+            start_point = end_points[i]
+            # index = None
+
+            for k in range(len(parallels)):
+                # print(f'{parallels[k].upper_point} - parallel')
+                # print(f'{start_point} - start point')
+                if (start_point == parallels[k].upper_point or start_point == parallels[k].lower_point):
+                    index = k
+                    if index != 0:
+                        parallels_path = parallels_path[::-1]
+                    break
+            
+            
+
+            if start_point == parallels_path[0].upper_point:
+                seq = ['upper_point', 'lower_point']
+            else:
+                seq = ['lower_point', 'upper_point']
+
+            for k in range(len(parallels_path)):
+                if k % 2 == 0:
+                    for point in seq:
+                        path.append(getattr(parallels_path[k], point))
+                else:
+                    for point in seq[::-1]:
+                        path.append(getattr(parallels_path[k], point))
+
+            paths.append(path)
+        # for item in paths:
+        #     print(f'path item {item}')
+        # print(20*'*')
+        return paths
+    
+    def get_distance(self, p1, p2):
+        x1, y1 = p1[0], p1[1]
+        x2, y2 = p2[0], p2[1]
+
+        x = x2 - x1
+        y = y2 - y1
+
+        diff = math.sqrt(x*x + y*y)
+        return diff
+
+    def comptue_path_length(self):
+        paths = self.paths
+        path_distances = []
+        
+        for i in range(len(paths)):
+            path = paths[i]
+            distance = 0
+            for k in range(len(path)-1):
+                p1 = path[k]
+                p2 = path[k+1]
+                distance = distance + self.get_distance(p1,p2)
+            path_distances.append(distance)
+        
+        self.path_distances = path_distances
+
+
+
+
+
+
+    def get_node_states(self):
+        paths = self.paths
+        node_states = []
+
+        for i in range(len(paths)):
+            path = paths[i]
+            node_states.append([path[0],path[-1]])
+        # for item in node_states:
+        #     print(f'node_state item: {item}')
+        # print(5*'-')
+        return node_states
+
 
 class Areas():
     def __init__(self, tracks, clusters, objects, width, plot_print, outer_index) -> None:
         super().__init__()
         self.graph_width = width
+
         self.get_sub_areas(tracks, clusters, objects)
         self.split_by_different_objects()
         self.check_neighbours(width)
         self.split_by_convex(objects, plot_print, outer_index)
+        self.set_areas()
 
         
         # self.plot_print = plot_print
-
+    def set_areas(self):
+        sub_areas = []
+        for i in range(len(self.areas)):
+            sub_areas.append(SubArea(self.areas[i]))
+        self.sub_areas = sub_areas
 
     def get_sub_areas(self, tracks, clusters, objects):
         sub_areas = []
@@ -226,7 +343,10 @@ class Areas():
     def next_point_collision(self, area, objects, plot_print, outer_index):
         counter = 0
         good = True
-        print(50*'-')
+        # print(50*'-')
+        # print(f"area looks: {area}")
+        # print(f'out of index fuckup: {area[0].upper_group}')
+        # print(f'len of objects {len(objects)}')
         obj_upper = Polygon(objects[area[0].upper_group])
         obj_lower = Polygon(objects[area[0].lower_group])
         obj_upper_index = area[0].upper_group
@@ -261,7 +381,7 @@ class Areas():
 
             if ring_lower.intersects(line_lower):
                 intersection = ring_lower.intersection(line_lower)
-                print(f"type of intersection : {intersection.geom_type}")
+                # print(f"type of intersection : {intersection.geom_type}")
                 # if intersection.geom_type != "LineString" and self.center_outside(lower_points, obj_lower, outer_index, obj_lower_index) and self.distance_not_in_bounds(lower_points):
                 if intersection.geom_type != "LineString" and (self.center_outside(lower_points, obj_lower, outer_index, obj_lower_index) or len(intersection)>2) and self.distance_not_in_bounds(lower_points) :
                     # print(f"len of intersection: {len(intersection)}")
@@ -284,17 +404,19 @@ class Areas():
         output_areas = []
         
         for area in areas:
-            indexes = self.next_point_collision(area, objects, plot_print, outer_index)
-            indexes = [x+1 for x in indexes]
-            if len(indexes)<1:
-                output_areas.append(area)
-            else:
-                print(f'splitting indexes: {indexes}')
-                new_ones = self.partition(area, indexes)
-                print(f"new areas to append: {new_ones}")
-                for item in new_ones:
-                    print(f"item looks: {item}")
-                    output_areas.append(item)
+            #neco nefungovalo pri rozteci 1m a uhlu 135
+            if area:
+                indexes = self.next_point_collision(area, objects, plot_print, outer_index)
+                indexes = [x+1 for x in indexes]
+                if len(indexes)<1:
+                    output_areas.append(area)
+                else:
+                    # print(f'splitting indexes: {indexes}')
+                    new_ones = self.partition(area, indexes)
+                    # print(f"new areas to append: {new_ones}")
+                    for item in new_ones:
+                        # print(f"item looks: {item}")
+                        output_areas.append(item)
         
         self.areas = output_areas
 
