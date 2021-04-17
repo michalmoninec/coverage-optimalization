@@ -178,6 +178,14 @@ class GraphData():
         x = np.round(np.array(x),4)
         y = np.round(np.array(y),4)
 
+        xmin = min(x)
+        ymin = min(y)
+        print('min x =  {}'.format(xmin))
+        print('min y =  {}'.format(ymin))
+
+        x = [x-xmin for x in x]
+        y = [y-ymin for y in y]
+
         # print(f"vstup x> {x}")
 
         for i in range(len(x)):

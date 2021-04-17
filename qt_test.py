@@ -26,6 +26,8 @@ import numpy as np
 import itertools
 import time
 
+import matplotlib.pyplot as plt
+
 from copy import deepcopy
 
 from hirearchial_clustering import hierarichial_cluster as cluster
@@ -204,19 +206,6 @@ class Window(QWidget):
                 group_ids.append(i)
                 path_distances.append(area.path_distances[k])
 
-        # print(f"path distances: {path_distances}")
-
-        # print(f'count of node states: {len(node_states)}')
-
-        node_graph = NodeGraph(node_states, group_ids, path_distances)
-        
-        
-        # print(f'distance table: {node_graph.distance_table}')
-
-
-
-        # areas_after_change = areas.split_by_different_objects()
-        # areas_after_check2 = areas.check_neighbours(width)
         areas_after_check2 = areas.areas
         areas_test = areas.areas
 
@@ -233,21 +222,12 @@ class Window(QWidget):
         for item in graph.inner:
             objects.append(item)
 
+        # print(f'objects: {objects}')
 
-        #TOHLE JE AKTUALNI PLOT KTERY POUZIVAM!!!!
-        # print(f"number of post processed clusters: {len(areas_after_check2)}")
-        # for i in range(len(areas_after_check2)):
-        #     area = areas_after_check2[i]
-        #     for k in range(len(area)):
-        #         parallel = area[k]
-        #         self.plot((parallel.upper_point[0],parallel.lower_point[0]),(parallel.upper_point[1],parallel.lower_point[1]) , colors[i], "plot")
-        #         self.plot_upper(parallel.upper_point, colors[i])
-
-        #
-        # print(f'should iterate over: {len(areas.sub_areas)}')
+        node_graph = NodeGraph(node_states, group_ids, path_distances, objects)
         
-        sample_count = 15
-        # sample_count = len(areas.sub_areas)
+        # sample_count = 12
+        sample_count = len(areas.sub_areas)
 
         orig_seq = list(range(0,sample_count))
         # print(f"len of sub_areas: {len(areas.sub_areas)}")
@@ -259,6 +239,9 @@ class Window(QWidget):
             areas_nodes.append(areas.sub_areas[i])
 
         node_graph.set_areas(areas_nodes)
+
+        # node_graph.get_dist_visibility(objects)
+
         print(f'Number of all clusters: {len(areas.sub_areas)}')
         print(f'Count of clusters to sample: {sample_count}')
         
@@ -270,7 +253,7 @@ class Window(QWidget):
         # print(f'exact best sequence seqee: {p1}')
         # print(f'exact best solution value: {exact_val}')
 
-        pop_size = 10
+        pop_size = 16
         seq, time_genetic = run_evolution(sample_count, 100, node_graph.get_value_fitness, pop_size)
         # print(f'final seq : {seq}')
         seq_areas = [areas_nodes[ind] for ind in seq ]
@@ -281,7 +264,15 @@ class Window(QWidget):
         final_seq, final_val = node_graph.get_value(seq_areas)
         print(f'genetic best solution: {final_val}')
         print(f'Time needed for GA: {time_genetic}')
-        paths, states = self.switch_seq(areas_nodes, final_seq)
+        paths, states, paths_m = self.switch_seq(areas_nodes, final_seq, node_graph)
+
+        edges = node_graph.vis_graph.visgraph.get_edges()
+        # for edge in edges:
+        #     plt.plot([edge.p1.x,edge.p2.x],[edge.p1.y,edge.p2.y])
+        # # # plt.plot([point.x for point in points],[point.y for point in points])
+        # plt.show()
+
+        # self.node_graph = node_graph
 
         # percentage = ((final_val - exact_val)/(max_val - exact_val))*100
         # print(f'percentage difference: {round(percentage,2)}')
@@ -289,27 +280,60 @@ class Window(QWidget):
         
         output_points = []
         for index, path in enumerate(paths):
-            self.plot_path(path, colors[index])
+            self.plot_path(path, colors[index], 2)
             self.plot_upper(path[0], [0,150,0])
             self.plot_upper(path[-1], [150,0,0])
             if index < (len(paths)-1):
                 points = [paths[index][-1], paths[index+1][0]]
-                self.plot_crossing(points)
+                self.plot_crossing(points,[150,0,0])
+                self.test_plot_lines(points, node_graph)
+        
+        # print(f'paths_m {paths_m}')
+        for path_m in paths_m:
+            self.plot_path(path_m, [0,0,150], 5)
         
         self.plot_first(paths[0][0], [0,150,0])
         self.plot_last(paths[-1][-1], [150,0,0])
 
-    def switch_seq(self, areas, nodes):
+
+    def from_points_to_coords(self, n1_state, n2_state, node_graph):
+        ind1 = node_graph.node_states.index(n1_state)
+        ind2 = node_graph.node_states.index(n2_state)
+        # print(f'Path between is : {node_graph.move_between_paths[ind1][ind2]}')
+        points = node_graph.move_between_paths[ind1][ind2]
+        return points
+
+    def test_plot_lines(self, points, node_graph):
+        point1 = points[0]
+        point2 = points[1]
+
+        for i in range(len(node_graph.test_lines)):
+            line = node_graph.test_lines[i]
+            if line[0] == point1:
+                coords = line[1]
+                if coords:
+                    print(f'dostal jsem se tady')
+                    self.plot_crossing([[coords[0][0],coords[1][0]],[coords[0][1],coords[1][1]]])
+
+        
+        pass
+
+    def switch_seq(self, areas, nodes, node_graph):
         paths = []
         states = []
+        paths_interstate = []
         for i in range(len(nodes)):
             node = nodes[i]
             for j in range(len(areas)):
                 for k in range(len(areas[j].node_states)):
                     if node.state == areas[j].node_states[k]:
                         paths.append(areas[j].paths[k])
+                        # print(f'original paths: {paths}')
+                        if i < len(nodes)-1:
+                            points = self.from_points_to_coords(nodes[i].state,nodes[i+1].state, node_graph)
+                            paths_interstate.append([(point.x,point.y) for point in points])
                         states.append(areas[j].node_states[k])
-        return paths, states
+        return paths, states, paths_interstate
 
 
 
@@ -403,17 +427,16 @@ class Window(QWidget):
     def plot_state(self, point, color):
         pass
 
-    def plot_path(self, points, color):
+    def plot_path(self, points, color, width):
         x = []
         y = []
         for i in range(len(points)):
             x.append(points[i][0])
             y.append(points[i][1])
-        pen = pen = pg.mkPen(color=color, width=2)
+        pen = pen = pg.mkPen(color=color, width=width)
         self.contentFrame.graphWidget.plot(x,y,name='name', pen=pen)
 
-    def plot_crossing(self, points):
-        color = [150,0,0]
+    def plot_crossing(self, points, color):
         x = []
         y = []
         for i in range(len(points)):

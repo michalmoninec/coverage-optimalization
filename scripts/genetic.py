@@ -33,6 +33,7 @@ def single_point_crossover(parents):
     point = randint(0, len(parents[0])-1)
     a_c = a[0:point] + b[point:]
     b_c = b[0:point] + a[point:]
+
     while not_valid(a_c, b_c):
         point = randint(0, len(parents[0])-1)
         a_c = a[0:point] + b[point:]
@@ -67,9 +68,6 @@ def init_population(len_limit, pop_count):
         arr_out.append(arr)
     return arr_out
 
-# def add_best(genom, best_val):
-#     if 
-
 
 
 def run_evolution(genome_len, evo_limit, fitness_func, pop_size):
@@ -92,7 +90,6 @@ def run_evolution(genome_len, evo_limit, fitness_func, pop_size):
             sol_arr.append(fitness_func(population[0]))
 
         parents = selection_parents(population, fitness_func)
-        # print(f'fockin parents from slamus: {parents}')
         
         # next_generation = population[0:(len(population)-len(parents))]
 
@@ -104,10 +101,17 @@ def run_evolution(genome_len, evo_limit, fitness_func, pop_size):
             children_to_mutation += [child[0], child[1]]
 
         children = [mutation(child) for child in children_to_mutation]
+
+        children = sorted(children, key=lambda genome: fitness_func(genome))
         # print(f'children after: {children}')
 
 
-        population = children.copy()
+        population_next = children[0:round(pop_size/2)]
+        population_next = population_next + population[0:round(pop_size/2)]
+        population = population_next
+
+        
+
         # population += [genom for genom in next_generation]
         
         
