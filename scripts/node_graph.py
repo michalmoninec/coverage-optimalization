@@ -168,11 +168,17 @@ class NodeGraph():
         self.areas = area
 
     def get_value_fitness(self, seq):
+        start = time.time()
         seq = [self.areas[i] for i in seq]
+        
         self.create_nodes(seq)
+        
         self.assign_values()
+        
         sequence, val = self.get_shortest_path()
         # print(f'sequence {sequence}, val: {val}')
+        end = time.time()
+        # print(f'Time for fitness function: {end-start}')
         return val
 
 
@@ -213,40 +219,44 @@ class NodeGraph():
         y_diff = y2 - y1
 
         dist = math.sqrt(x_diff*x_diff + y_diff*y_diff)
-        dist2 = None
         
-        point1 = Point(x1,y1)
-        point2 = Point(x2,y2)
+        # PART FOR VISIBILITY PATH
+        # dist2 = None
+        
+        # point1 = Point(x1,y1)
+        # point2 = Point(x2,y2)
 
-        id1 = self.get_closest_polygon(point1)
-        id2 = self.get_closest_polygon(point2)
+        # id1 = self.get_closest_polygon(point1)
+        # id2 = self.get_closest_polygon(point2)
 
-        if id1 != None:
-            new_point_1, coords1 = self.move_point_from_polygon([x1,y1], id1)
-            point1 = vg.Point(new_point_1[0], new_point_1[1])
-            # print('Updated point1')
-        else:
-            point1 = vg.Point(x1,y1)
+        # if id1 != None:
+        #     new_point_1, coords1 = self.move_point_from_polygon([x1,y1], id1)
+        #     point1 = vg.Point(new_point_1[0], new_point_1[1])
+        #     # print('Updated point1')
+        # else:
+        #     point1 = vg.Point(x1,y1)
 
-        if id2 != None:
-            new_point_2, coords2 = self.move_point_from_polygon([x2,y2], id2)
-            point2 = vg.Point(new_point_2[0],new_point_2[1])
-            # print('Updated point2')
-        else:
-            point2 = vg.Point(x2,y2)
+        # if id2 != None:
+        #     new_point_2, coords2 = self.move_point_from_polygon([x2,y2], id2)
+        #     point2 = vg.Point(new_point_2[0],new_point_2[1])
+        #     # print('Updated point2')
+        # else:
+        #     point2 = vg.Point(x2,y2)
 
-        try:
-            dist2 = self.vis_graph.shortest_path(point1, point2)
-        except Exception as e:
-            print(e)
-            pass
+        # try:
+        #     dist2 = self.vis_graph.shortest_path(point1, point2)
+        # except Exception as e:
+        #     print(e)
+        #     pass
 
-        if dist2:
-            self.move_between_paths.append(dist2)
-            return self.compute_path_len(dist2), dist2
-        else:
-            self.move_between_paths.append([point1, point2])
-            return dist, [point1, point2]
+        # if dist2:
+        #     self.move_between_paths.append(dist2)
+        #     return self.compute_path_len(dist2), dist2
+        # else:
+        #     self.move_between_paths.append([point1, point2])
+        #     return dist, [point1, point2]
+
+        return dist, [vg.Point(x1,y1),vg.Point(x2,y2)]
 
     def move_point_from_polygon(self, point_in, polygon_id):
         # print(f'objects in move function : {len(self.objects)}')

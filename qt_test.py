@@ -254,7 +254,7 @@ class Window(QWidget):
         # print(f'exact best solution value: {exact_val}')
 
         pop_size = 16
-        seq, time_genetic = run_evolution(sample_count, 100, node_graph.get_value_fitness, pop_size)
+        seq, time_genetic = run_evolution(sample_count, 1000, node_graph.get_value_fitness, pop_size)
         # print(f'final seq : {seq}')
         seq_areas = [areas_nodes[ind] for ind in seq ]
 

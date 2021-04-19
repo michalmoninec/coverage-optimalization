@@ -9,8 +9,8 @@ def not_valid(a, b):
         # print(f"Not suitable crossover.")
         return True
 
-def mutation(genom):
-    prob = 0.6
+def mutate(genom):
+    prob = 0.2
     if random() < prob:
         # print(f'I will mutate this bitch!')
         p1 = randrange(0, len(genom))
@@ -46,18 +46,12 @@ def single_point_crossover(parents):
 
 
 def selection_parents(population, fitness_func):
-    parents_output = []
-
-    for i in range(round(len(population)/2)):
-        parents = choices(
+    return choices(
         population=population,
-        weights=[(1/fitness_func(gene)) for gene in population],
+        weights= [ (1/fitness_func(gene)) for gene in population],
         k = 2
-        )
-        # print(f'selected parents: {parents}')
-        parents_output.append(parents)
+    )
 
-    return parents_output
 
 
 def init_population(len_limit, pop_count):
@@ -68,7 +62,53 @@ def init_population(len_limit, pop_count):
         arr_out.append(arr)
     return arr_out
 
+def gsx_crossover(parents):
+    parent1 = parents[0]
+    parent2 = parents[1]
+    cross_point = parent1[randint(0,len(parent1)-1)]
+    # print(f'cross_point is: {cross_point}')
+    # cross_point = 'B'
 
+    arr1 = parent1[parent1.index(cross_point)+1:]
+    arr2 = parent2[0:parent2.index(cross_point)]
+    arr2 = arr2[::-1]
+    # print(arr1)
+    # print(arr2)
+
+    child = [cross_point]
+
+    k = min(len(arr1),len(arr2))
+    for i in range(k):
+        if arr1[i] not in child:
+            child.append(arr1[i])
+        else:
+            break
+        if arr2[i] not in child:
+            child.insert(0,arr2[i])
+        else:
+            break
+
+    rest = []
+    for item in parent1:
+        if item not in child:
+            rest.append(item)
+    k = 0
+    
+    while len(rest)>0:
+        i = randint(0,len(rest)-1)
+        
+        if k%2 == 0:
+            child.insert(0, rest[i])
+        else:
+            child.append(rest[i])
+        rest.pop(i)
+        k += 1
+
+    return child
+
+def swap_2_opt(arr, fitness_func):
+
+    pass
 
 def run_evolution(genome_len, evo_limit, fitness_func, pop_size):
     population = init_population(genome_len, pop_count = pop_size)
@@ -78,10 +118,10 @@ def run_evolution(genome_len, evo_limit, fitness_func, pop_size):
 
     start = time.time()
     # print(f'start of evolution')
-    for i in range(evo_limit):
-        
+    for _ in range(evo_limit):
+        i_start = time.time()
         population = sorted(population, key=lambda genome: fitness_func(genome))
-        # print(f'sorted population: {population}')
+        # print(f'Population before: {population}')
 
         if fitness_func(population[0])<best_val:
             # print(f'this is better: {fitness_func(population[0])<best_val}')
@@ -90,44 +130,30 @@ def run_evolution(genome_len, evo_limit, fitness_func, pop_size):
             sol_arr.append(fitness_func(population[0]))
 
         parents = selection_parents(population, fitness_func)
+        # print(f'parents selected are: {parents}')
+
+        child = gsx_crossover(parents)
+        child = mutate(child)
+
+        parents = sorted(parents, key=lambda genome: fitness_func(genome))
+
+        if fitness_func(child)<fitness_func(parents[1]):
+            # print(f'Upadting parent. Element number> {population.index(parents[1])}')
+            population[population.index(parents[1])] = child
         
-        # next_generation = population[0:(len(population)-len(parents))]
+        # print(f'Population after: {population}')
+        i_end = time.time()
+        print(f'One iteration of GA lasts: {i_end - i_start}')
 
-        children = [single_point_crossover(parent) for parent in parents]
-        # print(f'children before: {children}')
-        children_to_mutation = []
-        
-        for child in children:
-            children_to_mutation += [child[0], child[1]]
-
-        children = [mutation(child) for child in children_to_mutation]
-
-        children = sorted(children, key=lambda genome: fitness_func(genome))
-        # print(f'children after: {children}')
-
-
-        population_next = children[0:round(pop_size/2)]
-        population_next = population_next + population[0:round(pop_size/2)]
-        population = population_next
-
-        
-
-        # population += [genom for genom in next_generation]
         
         
     end = time.time()
 
-    # print(f'sorted population: {population}')
-    # print(f'fitness values: {[fitness_func(item) for item in population]}')
-    last_generation = [fitness_func(item) for item in population]
-    best_index = last_generation.index(min(last_generation))
-    # print(f'best value form last generation: {best_last}')
-    # print(f'best value from all generations: {min(solutions)}')
-    # print(f'time needed: {end - start}')
-
-    # best_seq = population[0]
     best_seq = solution
 
     time_needed = end - start
     # print(f'best seq try out: {best_seq}')
+    for item in sol_arr:
+        print(f'Iteration value: {item}')
     return best_seq, time_needed
+

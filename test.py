@@ -1,59 +1,57 @@
-from pyvisgraph import vis_graph
-from shapely.geometry.polygon import Polygon
-import xlwt
-from xlwt import Workbook
-from random import random, choices, shuffle, randint, randrange
+import random 
 
-import pyvisgraph as vg
-import matplotlib.pyplot as plt
-from shapely.geometry import Polygon
-# polygons = [[(706704.1057, 5528909.5638), (706713.0852, 5528909.3863), (706713.1019, 5528896.3983), (706700.6629, 5528896.2188), (706700.4269, 5528904.8689), (706704.0878, 5528905.0096), (706704.1057, 5528909.5638)], [(706734.0413, 5528903.8467), (706736.5461, 5528903.943), (706736.3574, 5528901.323), (706733.7448, 5528901.5212), (706734.0413, 5528903.8467)], [(706711.6391619823, 5528913.776144666), (706710.4848, 5528914.2878), (706711.6437, 5528914.2577), (706711.6391619823, 5528913.776144666)], [(706736.872, 5528910.5245), (706739.7707, 5528910.412), (706740.1718, 5528899.9767), (706737.1854, 5528899.8619), (706736.872, 5528910.5245)]]
-polygons = [[(706704.1057, 5528909.5638), (706713.0852, 5528909.3863), (706713.1019, 5528896.3983), (706700.6629, 5528896.2188), (706700.4269, 5528904.8689), (706704.0878, 5528905.0096)], [(706734.0413, 5528903.8467), (706736.5461, 5528903.943), (706736.3574, 5528901.323), (706733.7448, 5528901.5212), (706734.0413, 5528903.8467)], [(706711.6391619823, 5528913.776144666), (706710.4848, 5528914.2878), (706711.6437, 5528914.2577), (706711.6391619823, 5528913.776144666)], [(706736.872, 5528910.5245), (706739.7707, 5528910.412), (706740.1718, 5528899.9767), (706737.1854, 5528899.8619), (706736.872, 5528910.5245)]]
+def gsx_crossover(parent1, parent2):
+    # cross_point = parent1[random.randint(0,len(parent1))]
+    cross_point = 'B'
 
-polyg = polygons[0]
-xx = [round(pol[0],2) for pol in polyg]
-x_min = min(xx)
-xx = [round(x-x_min,2) for x in xx]
+    arr1 = parent1[parent1.index(cross_point)+1:]
+    arr2 = parent2[0:parent2.index(cross_point)]
+    arr2 = arr2[::-1]
+    print(arr1)
+    print(arr2)
 
-yy = [round(pol[1],2) for pol in polyg]
-y_min = min(yy)
-yy = [round(y-y_min,2) for y in yy]
+    child = [cross_point]
 
-polys = []
-for i in range(len(xx)):
-    polys.append(vg.Point(xx[i],yy[i]))
+    k = min(len(arr1),len(arr2))
+    for i in range(k):
+        if arr1[i] not in child:
+            child.append(arr1[i])
+        else:
+            break
+        if arr2[i] not in child:
+            child.insert(0,arr2[i])
+        else:
+            break
 
+    rest = []
+    for item in parent1:
+        if item not in child:
+            rest.append(item)
+    k = 0
 
+    while len(rest)>0:
+        i = random.randint(0,len(rest)-1)
+        
+        if k%2 == 0:
+            child.insert(0, rest[i])
+        else:
+            child.append(rest[i])
+        rest.pop(i)
+        k += 1
 
-
-# poly = [vg.Point(point[0],point[1]) for point in polyg]
-
-graph = vg.VisGraph()
-graph.build([polys])
-edges = graph.visgraph.get_edges()
-
-for edge in edges:
-    plt.plot([edge.p1.x,edge.p2.x],[edge.p1.y,edge.p2.y])
-
-
-x1, y1 = 706703.56, 5528907.71
-x2, y2 = 706713.45, 5528898.50
-# x2, y2 = 706715.45, 5528898.50
-# x2, y2 = 706700.15, 5528903.74
-
-x1 = round(x1 - x_min, 2)
-x2 = round(x2 - x_min, 2)
-
-y1 = round(y1 - y_min, 2)
-y2 = round(y2 - y_min, 2)
+    return child
 
 
-plt.plot([x1,x2],[y1,y2])
-# plt.plot(x2,y2)
 
 
-p1 = vg.Point(x1,y1)
-p2 = vg.Point(x2,y2)
-plt.show()
-path = graph.shortest_path(p1,p2)
-print(path)
+
+# ex1 = ['D','C','I','B','A','H','G','E','F','K','L','M','N','O','J']
+ex1 = 'DCIBAHGEFKLMNOJ'
+ex2 = 'GFLOMKNEDJICBHA'
+print(len(ex1))
+
+gsx_crossover(ex1,ex2)
+
+# a = [1,2,3,5]
+# a.insert(0,5)
+# print(a)
