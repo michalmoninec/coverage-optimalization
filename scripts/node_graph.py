@@ -4,6 +4,7 @@ import itertools
 import time
 
 import pyvisgraph as vg
+from pyvisgraph.shortest_path import dijkstra
 from shapely.geometry.linestring import LineString
 from shapely.geometry.polygon import LinearRing, Point, Polygon
 from shapely.ops import nearest_points
@@ -256,6 +257,7 @@ class NodeGraph():
         #     self.move_between_paths.append([point1, point2])
         #     return dist, [point1, point2]
 
+        #PART FOR EUCLID DIFFERENCIES
         return dist, [vg.Point(x1,y1),vg.Point(x2,y2)]
 
     def move_point_from_polygon(self, point_in, polygon_id):
@@ -289,11 +291,11 @@ class NodeGraph():
         x1, y1 = coords[0][0], coords[0][1]
         x2, y2 = coords[1][0], coords[1][1]
 
-        x1 = round(x1,2)
-        x2 = round(x2,2)
+        # x1 = round(x1,2)
+        # x2 = round(x2,2)
 
-        y1 = round(y1,2)
-        y2 = round(y2,2)
+        # y1 = round(y1,2)
+        # y2 = round(y2,2)
 
         # self.plot_path([[x[0],y[0]],[x[1],y[1]]], [0,150,0],5)
 

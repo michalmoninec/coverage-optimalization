@@ -64,7 +64,8 @@ class Window(QWidget):
         header.settingsButton.clicked.connect(self.showsettings)
         header.deleteGraphButton.clicked.connect(self.delete_graph_items)
         header.backButton.clicked.connect(self.backtograph)
-        header.backButton.setEnabled(False)        
+        header.backButton.setEnabled(False)
+        header.advancedOptions.clicked.connect(self.advanced_clicked)       
         ######################################################
         
         self.contentFrame = ContentWidget()
@@ -77,6 +78,9 @@ class Window(QWidget):
         content.widthInput.textChanged.connect(lambda text: self.widthInputCheck(text))
         content.threshInput.textChanged.connect(lambda text: self.threshInputCheck(text))
         content.angleInput.textChanged.connect(lambda text: self.angleInputCheck(text))
+        content.geneticIterLimit.textChanged.connect(lambda text: self.geneticInputChange(text))
+
+        content.advancedOptions.hide()
         ######################################################
 
 
@@ -86,6 +90,21 @@ class Window(QWidget):
         self.setLayout(layout)
         self.set_location()
         self.show()
+
+    def advanced_clicked(self):
+        text = self.headerFrame.advancedOptions.text()
+        if text == 'Advanced options':
+            self.headerFrame.advancedOptions.setText('Basic options')
+            self.contentFrame.advancedOptions.show()
+            self.graph_data.set_genetic_limit(int(self.contentFrame.geneticIterLimit.text()))
+        else:
+            self.headerFrame.advancedOptions.setText('Advanced options')
+            self.contentFrame.advancedOptions.hide()
+            self.graph_data.reset_advanced_settings()
+            #nastaveni pevnych hodnot
+        
+        
+        pass
 
     def angleInputCheck(self,text):
         if text:
@@ -113,6 +132,10 @@ class Window(QWidget):
             else:
                 out_text = text
             self.graph_data.setWidth(float(out_text))
+
+    def geneticInputChange(self, text):
+        if text:
+            self.graph_data.set_genetic_limit(int(text))
             
 
     def delete_graph_items(self):
@@ -195,7 +218,7 @@ class Window(QWidget):
         # print(f"upper point of first parallel : {areas.sub_areas[0].parallels[0].upper_point}")
         # print(f'path of first sub_area: {areas.sub_areas[0].paths}')
         # print(f"node states of first sub_area: {areas.sub_areas[0].node_states}")
-
+        print(f'Number of clusters: {len(areas.areas)}')
         node_states = []
         group_ids = []
         path_distances = []
@@ -221,12 +244,14 @@ class Window(QWidget):
         objects = [graph.outer]
         for item in graph.inner:
             objects.append(item)
+        
 
+        pass
         # print(f'objects: {objects}')
 
         node_graph = NodeGraph(node_states, group_ids, path_distances, objects)
         
-        # sample_count = 12
+        # sample_count = 8
         sample_count = len(areas.sub_areas)
 
         orig_seq = list(range(0,sample_count))
@@ -242,8 +267,8 @@ class Window(QWidget):
 
         # node_graph.get_dist_visibility(objects)
 
-        print(f'Number of all clusters: {len(areas.sub_areas)}')
-        print(f'Count of clusters to sample: {sample_count}')
+        # print(f'Number of all clusters: {len(areas.sub_areas)}')
+        # print(f'Count of clusters to sample: {sample_count}')
         
 
 
@@ -253,8 +278,9 @@ class Window(QWidget):
         # print(f'exact best sequence seqee: {p1}')
         # print(f'exact best solution value: {exact_val}')
 
-        pop_size = 16
-        seq, time_genetic = run_evolution(sample_count, 1000, node_graph.get_value_fitness, pop_size)
+        pop_size = 8
+        seq, time_genetic = run_evolution(sample_count, graph.genetic_limit, node_graph.get_value_fitness, pop_size)
+
         # print(f'final seq : {seq}')
         seq_areas = [areas_nodes[ind] for ind in seq ]
 

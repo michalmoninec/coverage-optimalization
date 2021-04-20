@@ -46,7 +46,7 @@ class InfoTable(QWidget):
         Column2 = QWidget()
         
         layoutVert2.addWidget(self.addRow('Number of clusters:', self.countOfClusters))
-        layoutVert2.addWidget(self.addRow('Thresh:', self.thresh))
+        # layoutVert2.addWidget(self.addRow('Thresh:', self.thresh))
         layoutVert2.addWidget(self.addRow('Angle:', self.angle))
 
         Column2.setLayout(layoutVert2)

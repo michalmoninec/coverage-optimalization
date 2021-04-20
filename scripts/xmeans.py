@@ -57,7 +57,7 @@ def xmeans_clustering(data, max_count):
 
     # print(f"data after round {data}")
 
-    amount_initial_centers = 10
+    amount_initial_centers = 4
 
     initial_centers = kmeans_plusplus_initializer(data, amount_initial_centers).initialize()
 
@@ -65,7 +65,7 @@ def xmeans_clustering(data, max_count):
     # BAYESIAN_INFORMATION_CRITERION
 
     # xmeans_instance = xmeans(data, initial_centers, tolerance=0.1, kmax=100, criterion=splitting_type.MINIMUM_NOISELESS_DESCRIPTION_LENGTH, ccore=False)
-    xmeans_instance = xmeans(data, initial_centers, tolerance=0.1, kmax=100, criterion=splitting_type.BAYESIAN_INFORMATION_CRITERION, ccore=False)
+    xmeans_instance = xmeans(data, initial_centers, tolerance=0.1, kmax=8, criterion=splitting_type.BAYESIAN_INFORMATION_CRITERION, ccore=False)
 
     xmeans_instance.process()
 
@@ -76,7 +76,7 @@ def xmeans_clustering(data, max_count):
     # print(f"centers loooks liike: {centers}")
     # print(f"clusters looks like: {clusters}")
 
-    # print(f"Total number of clusters is: {len(clusters)}")
+    print(f"Number of cluster after clustering: {len(clusters)}")
     clusters_count = len(clusters)
 
     return clusters, clusters_count, centers

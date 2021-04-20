@@ -136,6 +136,7 @@ class GraphData():
         self.width = None
         self.coef = None
         self.angle = None
+        self.genetic_limit = 10
 
     def set_default(self):
         self.coords = []
@@ -152,6 +153,12 @@ class GraphData():
 
     def setCoef(self,coef):
         self.coef = coef
+
+    def set_genetic_limit(self, limit):
+        self.genetic_limit = limit
+
+    def reset_advanced_settings(self):
+        self.genetic_limit = 10
     #handle different type of KML files
 
     def set_coords(self, file_name):

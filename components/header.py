@@ -15,10 +15,12 @@ class HeaderWidget(QWidget):
         self.settingsButton = PushButton('Settings')
         self.deleteGraphButton = PushButton('Delete graph')
         self.backButton = PushButton("Back to graph")
+        self.advancedOptions = PushButton('Advanced options')
         self.settingsToggle = QStackedWidget()
         self.infoTable = InfoTable()
         self.settingsButtons = QWidget()
         self.backButtonWidget = QWidget()
+        
         
         self.build()
 
@@ -35,6 +37,8 @@ class HeaderWidget(QWidget):
 
         
         backButtonlayout = QHBoxLayout()
+        backButtonlayout.addWidget(self.advancedOptions, alignment=Qt.AlignLeft | Qt.AlignTop)
+        backButtonlayout.addStretch(1)
         backButtonlayout.addWidget(self.backButton, alignment=Qt.AlignRight | Qt.AlignTop)
         self.backButtonWidget.setLayout(backButtonlayout)
 

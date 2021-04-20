@@ -46,11 +46,16 @@ def single_point_crossover(parents):
 
 
 def selection_parents(population, fitness_func):
-    return choices(
-        population=population,
-        weights= [ (1/fitness_func(gene)) for gene in population],
-        k = 2
-    )
+    not_found = True
+    while not_found:
+        parents = choices(
+            population=population,
+            weights= [ (1/fitness_func(gene)) for gene in population],
+            k = 2)
+        if parents[0] != parents[1]:
+            not_found = False
+            return parents
+
 
 
 
@@ -107,8 +112,101 @@ def gsx_crossover(parents):
     return child
 
 def swap_2_opt(arr, fitness_func):
+    best_val = fitness_func(arr)
+    # print(f'arr input: {arr}')
+    # print(50*'---')
+    # print(f'input best value: {best_val}')
+    best_swap = None
+
+    for i in range(len(arr)):
+        for k in range(i+1,len(arr)):
+            if i !=0:
+                pre = arr[0:i]
+            else:
+                pre = []
+
+            sub_arr = arr[i:k+1]
+            past = arr[k+1:]
+            new_arr = pre + sub_arr[::-1] + past
+            # print(new_arr)
+            # print(fitness_func(new_arr))
+            # print(50*'--')
+            # print(f'fitness iteration of new arr: {fitness_func(new_arr)}')
+            if fitness_func(new_arr)<best_val:
+                # print('Updating best val.')
+                best_val = fitness_func(new_arr)
+                best_swap = new_arr
+
+    if best_swap:
+        # print(f'returnin value: {fitness_func(best_swap)}')
+        return best_swap
+    else:
+        # print(f'returning value: {fitness_func(arr)}')
+        return arr
+
+
 
     pass
+
+def GA_with_2_opt(population, evo_limit, fitness_func, sol_arr, best_val, solution):
+    for _ in range(evo_limit):
+            i_start = time.time()
+            population = sorted(population, key=lambda genome: fitness_func(genome))
+            # print(f'Population before: {population}')
+            # print(f'fitness for population: {[fitness_func(pop) for pop in population]}')
+
+            if fitness_func(population[0])<best_val:
+                # print(f'this is better: {fitness_func(population[0])<best_val}')
+                solution = population[0]
+                best_val = fitness_func(population[0])
+                sol_arr.append(fitness_func(population[0]))
+
+            parents = selection_parents(population, fitness_func)
+            # print(f'parents selected are: {parents}')
+
+            child = gsx_crossover(parents)
+            child = mutate(child)
+            child = swap_2_opt(child, fitness_func)
+
+            parents = sorted(parents, key=lambda genome: fitness_func(genome))
+            # print(f'parents selected values: {[fitness_func(parent) for parent in parents]}')
+
+            if fitness_func(child)<fitness_func(parents[1]):
+                # print(f'fitness of child is better than worse parent: {fitness_func(child)}')
+                # print(f'Upadting parent. Element number> {population.index(parents[1])}')
+                population[population.index(parents[1])] = child
+            
+            # print(f'Population after: {population}')
+            i_end = time.time()
+            print(f'One iteration of GA lasts: {i_end - i_start}')
+    return solution
+
+def GA_with_elitism_multi_parents(population, evo_limit, fitness_func, sol_arr, best_val, solution):
+    for _ in range(evo_limit):
+        i_start = time.time()
+        population = sorted(population, key=lambda genome: fitness_func(genome))
+
+        if fitness_func(population[0])<best_val:
+            solution = population[0]
+            best_val = fitness_func(population[0])
+            sol_arr.append(fitness_func(population[0]))
+
+        children = []
+
+        for i in range(round(len(population)/2)):
+            parents = selection_parents(population, fitness_func)
+
+            child = gsx_crossover(parents)
+            child = mutate(child)
+            children.append(child)
+
+        population = children + population[0:len(population)-len(children)]
+
+        # print(f'next population looks: {population}')
+        
+        i_end = time.time()
+        print(f'One iteration of GA lasts: {i_end - i_start}')
+    return solution
 
 def run_evolution(genome_len, evo_limit, fitness_func, pop_size):
     population = init_population(genome_len, pop_count = pop_size)
@@ -117,33 +215,11 @@ def run_evolution(genome_len, evo_limit, fitness_func, pop_size):
     best_val = math.inf
 
     start = time.time()
-    # print(f'start of evolution')
-    for _ in range(evo_limit):
-        i_start = time.time()
-        population = sorted(population, key=lambda genome: fitness_func(genome))
-        # print(f'Population before: {population}')
 
-        if fitness_func(population[0])<best_val:
-            # print(f'this is better: {fitness_func(population[0])<best_val}')
-            solution = population[0]
-            best_val = fitness_func(population[0])
-            sol_arr.append(fitness_func(population[0]))
+    # solution = GA_with_2_opt(population, evo_limit, fitness_func, sol_arr, best_val, solution)
 
-        parents = selection_parents(population, fitness_func)
-        # print(f'parents selected are: {parents}')
+    solution = GA_with_elitism_multi_parents(population, evo_limit, fitness_func, sol_arr, best_val, solution)
 
-        child = gsx_crossover(parents)
-        child = mutate(child)
-
-        parents = sorted(parents, key=lambda genome: fitness_func(genome))
-
-        if fitness_func(child)<fitness_func(parents[1]):
-            # print(f'Upadting parent. Element number> {population.index(parents[1])}')
-            population[population.index(parents[1])] = child
-        
-        # print(f'Population after: {population}')
-        i_end = time.time()
-        print(f'One iteration of GA lasts: {i_end - i_start}')
 
         
         

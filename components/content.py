@@ -32,10 +32,14 @@ class ContentWidget(QWidget):
         # self.graphWidget2 = pg.PlotWidget()
 
         self.settingsMenu = QWidget()
+        self.advancedOptions = QWidget()
+
         self.startButton = PushButton('Start plot')
         self.widthInput = QLineEdit('0.5')
         self.threshInput = QLineEdit('0,1')
         self.angleInput = QLineEdit('135')
+
+        self.geneticIterLimit= QLineEdit('100')
 
         
 
@@ -80,10 +84,18 @@ class ContentWidget(QWidget):
         self.graphWrapper.setLayout(graphWrapperLayout)
 
         settingsWrapperLayout = QHBoxLayout()
+        advancedSettingsWrapperLayout = QHBoxLayout()
+
         settingsLayout = QVBoxLayout()
+        advancedSettingsLayout = QVBoxLayout()
 
         formGroupBox = QGroupBox()
         formLayout = QFormLayout()
+
+        advancedGroupBox = QGroupBox()
+        advancedFormLayout = QFormLayout()
+
+        intValidator = QIntValidator(0, 10000)
 
         onlyDouble = QDoubleValidator()
         self.widthInput.setValidator(onlyDouble)
@@ -99,6 +111,9 @@ class ContentWidget(QWidget):
         self.angleInput.setValidator(angleValidator)
         self.angleInput.setAlignment(Qt.AlignHCenter)
 
+        self.geneticIterLimit.setValidator(intValidator)
+        self.geneticIterLimit.setAlignment(Qt.AlignHCenter)
+
         # formLayout.addRow(QLabel("Thresh [m (<1)]:"), self.threshInput)
         
         formLayout.addRow(QLabel("Angle [Deg (0-180)]:"), self.angleInput)
@@ -110,7 +125,35 @@ class ContentWidget(QWidget):
         font-size: 15px;
         ''')
 
+        advancedFormLayout.addRow(QLabel("GA iter limi:"), self.geneticIterLimit)
+        # advancedFormLayout.addRow(QLabel("Width [m]:"), self.widthInput)
+        advancedGroupBox.setLayout(advancedFormLayout)
+        advancedGroupBox.setStyleSheet('''
+        background: darkgrey;
+        border-radius: 10px;
+        font-size: 15px;
+        ''')
+
+
+
+
+
+
+
+
+        advancedSettingsLayout.addStretch(1)
+        advancedSettingsLayout.addWidget(advancedGroupBox)
+        advancedSettingsLayout.addStretch(1)
+
+        advancedSettingsWrapperLayout.addStretch(1)
+        advancedSettingsWrapperLayout.addLayout(advancedSettingsLayout)
+        advancedSettingsWrapperLayout.addStretch(1)
+
+        self.advancedOptions.setLayout(advancedSettingsWrapperLayout)
+
+
         settingsLayout.addStretch(1)
+        settingsLayout.addWidget(self.advancedOptions, alignment=Qt.AlignHCenter)
         settingsLayout.addWidget(formGroupBox)
         settingsLayout.addWidget(self.startButton, alignment=Qt.AlignHCenter)
         settingsLayout.addStretch(1)
@@ -124,6 +167,7 @@ class ContentWidget(QWidget):
 
         self.contentStack.addWidget(self.settingsMenu)
         self.contentStack.addWidget(self.graphWrapper)
+        # self.contentStack.addWidget(self.advancedOptions)
 
 
         layout.addWidget(self.contentStack)
