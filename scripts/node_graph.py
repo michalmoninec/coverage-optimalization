@@ -219,6 +219,7 @@ class NodeGraph():
         x_diff = x2 - x1
         y_diff = y2 - y1
 
+        # pokud jde videt pocitam euclid, jinak visibility graph
         dist = math.sqrt(x_diff*x_diff + y_diff*y_diff)
         
         # PART FOR VISIBILITY PATH

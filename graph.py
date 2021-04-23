@@ -136,7 +136,13 @@ class GraphData():
         self.width = None
         self.coef = None
         self.angle = None
-        self.genetic_limit = 10
+        self.genetic_limit = 100
+        self.time_limit = 1800
+        self.pop_size = 8
+        self.genetic_type = 0
+        
+
+
 
     def set_default(self):
         self.coords = []
@@ -144,6 +150,12 @@ class GraphData():
         self.outer = []
         self.inner_plot = []
         self.outer_plot = []
+
+    def set_time_limit(self, limit):
+        self.time_limit = limit
+
+    def set_genetic_type(self, type):
+        self.genetic_type = type
 
     def setAngle(self, angle):
         self.angle = angle
@@ -157,8 +169,13 @@ class GraphData():
     def set_genetic_limit(self, limit):
         self.genetic_limit = limit
 
+    def set_pop_size(self, size):
+        self.pop_size = size
+
     def reset_advanced_settings(self):
-        self.genetic_limit = 10
+        self.genetic_limit = 100
+        self.time_limit = 1800
+        self.pop_size = 8
     #handle different type of KML files
 
     def set_coords(self, file_name):

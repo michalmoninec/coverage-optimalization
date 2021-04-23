@@ -2,6 +2,7 @@ from graph import GraphData
 from paralel_tracks import ParalelTracks
 # from components.infoTable import InfoTable
 from components.pushButton import PushButton
+from components.comboBox import ComboBox
 from components.header import HeaderWidget
 
 from PyQt5 import QtWidgets, QtGui
@@ -40,6 +41,15 @@ class ContentWidget(QWidget):
         self.angleInput = QLineEdit('135')
 
         self.geneticIterLimit= QLineEdit('100')
+        self.popSize = QLineEdit('8')
+        self.timeLimit = QLineEdit('1800')
+
+        self.geneticType = ComboBox(['GA with elitism', "GA with 2-opt"])
+
+        self.stopSimulationWidget = QWidget()
+
+        self.stopButton = PushButton('Stop simulation')
+        self.loadingBar = QLabel('Loading...')
 
         
 
@@ -83,6 +93,9 @@ class ContentWidget(QWidget):
         # graphWrapperLayout.addWidget(self.graphWidget2)
         self.graphWrapper.setLayout(graphWrapperLayout)
 
+        stopSimulationLayoutWrapper = QVBoxLayout()
+        stopSimulationLayout = QHBoxLayout()
+
         settingsWrapperLayout = QHBoxLayout()
         advancedSettingsWrapperLayout = QHBoxLayout()
 
@@ -111,13 +124,10 @@ class ContentWidget(QWidget):
         self.angleInput.setValidator(angleValidator)
         self.angleInput.setAlignment(Qt.AlignHCenter)
 
-        self.geneticIterLimit.setValidator(intValidator)
-        self.geneticIterLimit.setAlignment(Qt.AlignHCenter)
 
-        # formLayout.addRow(QLabel("Thresh [m (<1)]:"), self.threshInput)
-        
         formLayout.addRow(QLabel("Angle [Deg (0-180)]:"), self.angleInput)
         formLayout.addRow(QLabel("Width [m]:"), self.widthInput)
+        
         formGroupBox.setLayout(formLayout)
         formGroupBox.setStyleSheet('''
         background: darkgrey;
@@ -125,8 +135,19 @@ class ContentWidget(QWidget):
         font-size: 15px;
         ''')
 
+        self.geneticIterLimit.setValidator(intValidator)
+        self.geneticIterLimit.setAlignment(Qt.AlignHCenter)
+
+        self.popSize.setValidator(intValidator)
+        self.popSize.setAlignment(Qt.AlignHCenter)
+
+        self.timeLimit.setValidator(intValidator)
+        self.timeLimit.setAlignment(Qt.AlignHCenter)
+
         advancedFormLayout.addRow(QLabel("GA iter limi:"), self.geneticIterLimit)
-        # advancedFormLayout.addRow(QLabel("Width [m]:"), self.widthInput)
+        advancedFormLayout.addRow(QLabel("Population size:"), self.popSize)
+        advancedFormLayout.addRow(QLabel("Time limit for GA:"), self.timeLimit)
+
         advancedGroupBox.setLayout(advancedFormLayout)
         advancedGroupBox.setStyleSheet('''
         background: darkgrey;
@@ -134,14 +155,8 @@ class ContentWidget(QWidget):
         font-size: 15px;
         ''')
 
-
-
-
-
-
-
-
         advancedSettingsLayout.addStretch(1)
+        advancedSettingsLayout.addWidget(self.geneticType, alignment=Qt.AlignHCenter)
         advancedSettingsLayout.addWidget(advancedGroupBox)
         advancedSettingsLayout.addStretch(1)
 
@@ -165,8 +180,23 @@ class ContentWidget(QWidget):
 
         self.settingsMenu.setLayout(settingsWrapperLayout)
 
+        stopSimulationLayout.addStretch(1)
+        stopSimulationLayout.addWidget(self.loadingBar)
+        stopSimulationLayout.addWidget(self.stopButton)
+        stopSimulationLayout.addStretch(1)
+
+        stopSimulationLayoutWrapper.addStretch(1)
+        stopSimulationLayoutWrapper.addLayout(stopSimulationLayout)
+        stopSimulationLayoutWrapper.addStretch(1)
+
+        
+        self.stopSimulationWidget.setLayout(stopSimulationLayoutWrapper)
+
+
+
         self.contentStack.addWidget(self.settingsMenu)
         self.contentStack.addWidget(self.graphWrapper)
+        self.contentStack.addWidget(self.stopSimulationWidget)
         # self.contentStack.addWidget(self.advancedOptions)
 
 
