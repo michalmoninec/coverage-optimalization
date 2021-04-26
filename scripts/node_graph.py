@@ -207,7 +207,7 @@ class NodeGraph():
 
 
         end = time.time()
-        print(f'Time needed to crate vis graph: {end-start}')
+        # print(f'Time needed to crate vis graph: {end-start}')
 
     def get_distance(self, state1, state2):
         p1_end = state1[1]
@@ -218,6 +218,7 @@ class NodeGraph():
 
         x_diff = x2 - x1
         y_diff = y2 - y1
+        
 
         # pokud jde videt pocitam euclid, jinak visibility graph
         dist = math.sqrt(x_diff*x_diff + y_diff*y_diff)
@@ -245,8 +246,17 @@ class NodeGraph():
         # else:
         #     point2 = vg.Point(x2,y2)
 
+        # # line = LineString([(point1.x, point1.y),(point2.x, point2.y)])
+        # # interescts = False
+        # # for obj in self.polygons:
+        # #     if line.intersects(obj):
+        # #         intersects = True
+
+        # # if intersects:
         # try:
         #     dist2 = self.vis_graph.shortest_path(point1, point2)
+        #     dist2[0] = vg.Point(x1,y1)
+        #     dist2[-1] = vg.Point(x2,y2)
         # except Exception as e:
         #     print(e)
         #     pass
@@ -255,6 +265,9 @@ class NodeGraph():
         #     self.move_between_paths.append(dist2)
         #     return self.compute_path_len(dist2), dist2
         # else:
+        #     x_diff = x2 - x1
+        #     y_diff = y2 - y1
+        #     dist = math.sqrt(x_diff*x_diff + y_diff*y_diff)
         #     self.move_between_paths.append([point1, point2])
         #     return dist, [point1, point2]
 

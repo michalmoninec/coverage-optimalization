@@ -36,6 +36,7 @@ class ContentWidget(QWidget):
         self.advancedOptions = QWidget()
 
         self.startButton = PushButton('Start plot')
+        self.previewButton = PushButton('Area preview')
         self.widthInput = QLineEdit('0.5')
         self.threshInput = QLineEdit('0,1')
         self.angleInput = QLineEdit('135')
@@ -43,6 +44,8 @@ class ContentWidget(QWidget):
         self.geneticIterLimit= QLineEdit('100')
         self.popSize = QLineEdit('8')
         self.timeLimit = QLineEdit('1800')
+        self.clusterInitCount = QLineEdit('5')
+        self.clusterMaxCount = QLineEdit('8')
 
         self.geneticType = ComboBox(['GA with elitism', "GA with 2-opt"])
 
@@ -50,6 +53,10 @@ class ContentWidget(QWidget):
 
         self.stopButton = PushButton('Stop simulation')
         self.loadingBar = QLabel('Loading...')
+
+        self.areaPreview = PushButton('Area preview')
+
+        self.calculateGA = PushButton('Compute only new GA solution')
 
         
 
@@ -93,8 +100,8 @@ class ContentWidget(QWidget):
         # graphWrapperLayout.addWidget(self.graphWidget2)
         self.graphWrapper.setLayout(graphWrapperLayout)
 
-        stopSimulationLayoutWrapper = QVBoxLayout()
-        stopSimulationLayout = QHBoxLayout()
+        stopSimulationLayoutWrapper = QHBoxLayout()
+        stopSimulationLayout = QVBoxLayout()
 
         settingsWrapperLayout = QHBoxLayout()
         advancedSettingsWrapperLayout = QHBoxLayout()
@@ -144,6 +151,12 @@ class ContentWidget(QWidget):
         self.timeLimit.setValidator(intValidator)
         self.timeLimit.setAlignment(Qt.AlignHCenter)
 
+        self.clusterInitCount.setValidator(intValidator)
+        self.clusterInitCount.setAlignment(Qt.AlignHCenter)
+
+        self.clusterMaxCount.setValidator(intValidator)
+        self.clusterMaxCount.setAlignment(Qt.AlignHCenter)
+
         advancedFormLayout.addRow(QLabel("GA iter limi:"), self.geneticIterLimit)
         advancedFormLayout.addRow(QLabel("Population size:"), self.popSize)
         advancedFormLayout.addRow(QLabel("Time limit for GA:"), self.timeLimit)
@@ -170,8 +183,12 @@ class ContentWidget(QWidget):
         settingsLayout.addStretch(1)
         settingsLayout.addWidget(self.advancedOptions, alignment=Qt.AlignHCenter)
         settingsLayout.addWidget(formGroupBox)
+        settingsLayout.addWidget(self.calculateGA, alignment=Qt.AlignHCenter)
         settingsLayout.addWidget(self.startButton, alignment=Qt.AlignHCenter)
         settingsLayout.addStretch(1)
+
+        self.calculateGA.hide()
+        self.calculateGA.setFixedSize(250,30)
 
 
         settingsWrapperLayout.addStretch(1)
@@ -181,7 +198,8 @@ class ContentWidget(QWidget):
         self.settingsMenu.setLayout(settingsWrapperLayout)
 
         stopSimulationLayout.addStretch(1)
-        stopSimulationLayout.addWidget(self.loadingBar)
+        stopSimulationLayout.addWidget(self.loadingBar, alignment=Qt.AlignHCenter)
+        stopSimulationLayout.addWidget(self.previewButton, alignment=Qt.AlignHCenter)
         stopSimulationLayout.addWidget(self.stopButton)
         stopSimulationLayout.addStretch(1)
 

@@ -1,3 +1,4 @@
+from os import name
 from random import sample
 from graph import GraphData
 from paralel_tracks import ParalelTracks
@@ -10,7 +11,7 @@ from scripts.xmeans import xmeans_clustering
 from scripts.sub_areas import Areas
 from scripts.node_graph import NodeGraph
 from scripts.genetic import run_evolution
-from scripts.computational_thread import ComputationalThread
+from scripts.computational_thread import ClusteringThread, ComputationalThread, GeneticThread, VisibilityGraphThread
 
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QFileDialog, \
@@ -52,6 +53,11 @@ class Window(QWidget):
         margin: 0;
         padding: 0;
         """
+
+        colors = []
+        for i in range(100):
+            colors.append(list(np.random.choice(range(255), size=3)))
+        self.colors = colors
         
 
         self.setStyleSheet(style)
@@ -69,7 +75,8 @@ class Window(QWidget):
         header.deleteGraphButton.clicked.connect(self.delete_graph_items)
         header.backButton.clicked.connect(self.backtograph)
         header.backButton.setEnabled(False)
-        header.advancedOptions.clicked.connect(self.advanced_clicked)       
+        header.advancedOptions.clicked.connect(self.advanced_clicked)
+        header.backToLoaderButton.clicked.connect(self.backToLoader)    
         ######################################################
         
         self.contentFrame = ContentWidget()
@@ -88,6 +95,8 @@ class Window(QWidget):
         content.popSize.textChanged.connect(lambda text: self.popSizeChange(text))
         content.geneticType.cb.currentIndexChanged.connect(lambda index: self.geneticTypeChange(index))
         content.stopButton.clicked.connect(lambda: self.stopSimulation())
+        content.previewButton.clicked.connect(lambda: self.getToPreview())
+        content.calculateGA.clicked.connect(self.compute_ga)
 
         content.advancedOptions.hide()
         content.graphWrapper.hide()
@@ -159,9 +168,28 @@ class Window(QWidget):
             self.graph_data.set_genetic_limit(int(text))
 
     def stopSimulation(self):
-        self.compThread.terminate()
-        self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.settingsMenu)
-        self.headerFrame.advancedOptions.setDisabled(False)
+        if self.clustering_thread.isRunning():
+            self.clustering_thread.terminate()
+        elif self.visibility_thread.isRunning():
+            self.visibility_thread.terminate()
+        elif self.genetic_thread.isRunning():
+            self.genetic_thread.terminate()
+        pass
+        # self.compThread.terminate()
+        # self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.settingsMenu)
+        # self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.graphWrapper)
+        # self.headerFrame.settingsToggle.setCurrentWidget(self.headerFrame.backButtonWidget)
+        # self.headerFrame.backButton.setDisabled(True)
+        # self.headerFrame.advancedOptions.setDisabled(False)
+
+    def getToPreview(self):
+        self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.graphWrapper)
+        self.headerFrame.settingsToggle.setCurrentWidget(self.headerFrame.backToLoaderWidget)
+
+    def backToLoader(self):
+        self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.stopSimulationWidget)
+        self.headerFrame.settingsToggle.setCurrentWidget(self.headerFrame.backButtonWidget)
+
 
     def test_inner_thread(self):
         print(f'Print something: {self.graph_data.file_name}')
@@ -187,12 +215,8 @@ class Window(QWidget):
     #remove outer bounds 
     def delete_graph (self):
         self.graph_data.set_default()
-        # for item in self.contentFrame.graphWidget.listDataItems():
-        #     self.contentFrame.graphWidget.removeItem(item)
         self.contentFrame.graphWidget.clear()
-        # self.contentFrame.graphWidget2.clear()
 
-    #check data types
 
     def test_thread(self):
         # time.sleep(10)
@@ -223,12 +247,11 @@ class Window(QWidget):
             # percentage = ((final_val - exact_val)/(max_val - exact_val))*100
             # print(f'percentage difference: {round(percentage,2)}')
             colors = []
-            # for i in range(len(areas_after_change)):
-            #     colors.append(list(np.random.choice(range(255), size=3)))
-
-            # for i in range(len(areas_after_check2)):
             for i in range(100):
                 colors.append(list(np.random.choice(range(255), size=3)))
+            self.colors = colors
+
+            colors = self.colors
             
             output_points = []
             for index, path in enumerate(paths):
@@ -238,7 +261,7 @@ class Window(QWidget):
                 if index < (len(paths)-1):
                     points = [paths[index][-1], paths[index+1][0]]
                     self.plot_crossing(points,[150,0,0])
-                    self.test_plot_lines(points, node_graph)
+                    # self.test_plot_lines(points, node_graph)
             
             # print(f'paths_m {paths_m}')
             for path_m in paths_m:
@@ -246,11 +269,57 @@ class Window(QWidget):
             
             self.plot_first(paths[0][0], [0,150,0])
             self.plot_last(paths[-1][-1], [150,0,0])
-        
 
-    def set_complete_file(self):
+
+
+    def clustering_finished(self, cluster_thread):
+        colors = self.colors
+        for i in range(len(cluster_thread.areas.areas)):
+            parallels = cluster_thread.areas.areas[i]
+            color = colors[i]
+            for k in range(len(parallels)):
+                parallel = parallels[k]
+                self.plot((parallel.upper_point[0],parallel.lower_point[0]),(parallel.upper_point[1],parallel.lower_point[1]) , color, "plot")
+
+        self.visibility_thread = VisibilityGraphThread(cluster_thread.graph, cluster_thread.width, cluster_thread.areas)
+        self.visibility_thread.start()
+        self.visibility_thread.finished.connect(lambda: self.visibility_graph_finished(self.visibility_thread))
+        
+    def visibility_graph_finished(self, vis_thread):
+        print('Dodelal jsem visibility thread')
+        trd = vis_thread
+        self.ga_graph = trd.graph
+        self.ga_width = trd.width
+        self.ga_areas = trd.areas
+        self.ga_node_graph = trd.node_graph
+
+        self.genetic_thread = GeneticThread(trd.graph, trd.width, trd.areas, trd.node_graph)
+        self.genetic_thread.start()
+        self.genetic_thread.finished.connect(lambda: self.genetic_finished(self.genetic_thread))
+        self.contentFrame.startButton.setText('Start *NEW* plot')
+
+    def genetic_finished(self, genetic_thread):
+        print('Dodelal jsem aji genetak, to jsem pasak.')
+        ga = genetic_thread
+        self.algorithm_finished(ga.seq, ga.areas, ga.node_graph)
+        self.contentFrame.calculateGA.show()
+
+    def compute_ga(self):
+        
         self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.stopSimulationWidget)
         self.headerFrame.advancedOptions.setDisabled(True)
+
+        self.genetic_thread = GeneticThread(self.ga_graph, self.ga_width, self.ga_areas, self.ga_node_graph)
+        self.genetic_thread.finished.connect(lambda: self.genetic_finished(self.genetic_thread))
+        self.genetic_thread.start()
+
+
+        
+        # self.delete_computed()
+
+
+
+    def set_complete_file(self):
         self.delete_graph()  
         graph = self.graph_data
         width = graph.width
@@ -263,11 +332,17 @@ class Window(QWidget):
 
             for i in range(len(graph.inner_plot)):
                 self.plot(graph.inner_plot[i][0], graph.inner_plot[i][1], 'r', 'inner'+str(i))
-                # self.plot_second(graph.inner_plot[i][0], graph.inner_plot[i][1], 'r', 'inner'+str(i))
 
-            self.compThread = ComputationalThread(graph, width)
-            self.compThread.start()
-            self.compThread.finished.connect(lambda: self.algorithm_finished(self.compThread.seq, self.compThread.areas, self.compThread.node_graph))
+            # self.compThread = ComputationalThread(graph, width)
+            # self.compThread.start()
+            # self.compThread.finished.connect(lambda: self.algorithm_finished(self.compThread.seq, self.compThread.areas, self.compThread.node_graph))
+
+            self.clustering_thread = ClusteringThread(graph, width)
+            self.clustering_thread.start()
+            self.clustering_thread.finished.connect(lambda: self.clustering_finished(self.clustering_thread))
+
+            self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.stopSimulationWidget)
+            self.headerFrame.advancedOptions.setDisabled(True)
 
     def from_points_to_coords(self, n1_state, n2_state, node_graph):
         ind1 = node_graph.node_states.index(n1_state)
@@ -383,19 +458,19 @@ class Window(QWidget):
     def plot_upper_second(self ,point, color):
         # print(f"tady to dojde : {point[0]}")
         # pen = pg.mkPen(color="r")
-        self.contentFrame.graphWidget2.plot([point[0]],[point[1]], name="another", pen=None, symbol='o', symbolPen=pg.mkPen(color=color, width=0), symbolBrush=pg.mkBrush(color),symbolSize=7)
+        self.contentFrame.graphWidget2.plot([point[0]],[point[1]], name="plot_upper_second", pen=None, symbol='o', symbolPen=pg.mkPen(color=color, width=0), symbolBrush=pg.mkBrush(color),symbolSize=7)
 
 
     def plot_upper(self ,point, color):
         # print(f"tady to dojde : {point[0]}")
         # pen = pg.mkPen(color="r")
-        self.contentFrame.graphWidget.plot([point[0]],[point[1]], name="another", pen=None, symbol='o', symbolPen=pg.mkPen(color=color, width=0), symbolBrush=pg.mkBrush(color),symbolSize=10)
+        self.contentFrame.graphWidget.plot([point[0]],[point[1]], name="plot_upper", pen=None, symbol='o', symbolPen=pg.mkPen(color=color, width=0), symbolBrush=pg.mkBrush(color),symbolSize=10)
 
     def plot_first(self, point, color):
-        self.contentFrame.graphWidget.plot([point[0]],[point[1]], pen=None, symbol='o', symbolPen=pg.mkPen(color=color, width=0), symbolBrush=pg.mkBrush(color),symbolSize=15)
+        self.contentFrame.graphWidget.plot([point[0]],[point[1]], pen=None, symbol='o', symbolPen=pg.mkPen(color=color, width=0), symbolBrush=pg.mkBrush(color),symbolSize=15, name='plot_first')
 
     def plot_last(self, point, color):
-        self.contentFrame.graphWidget.plot([point[0]],[point[1]], pen=None, symbol='o', symbolPen=pg.mkPen(color=color, width=0), symbolBrush=pg.mkBrush(color),symbolSize=15)
+        self.contentFrame.graphWidget.plot([point[0]],[point[1]], pen=None, symbol='o', symbolPen=pg.mkPen(color=color, width=0), symbolBrush=pg.mkBrush(color),symbolSize=15, name='plot_last')
     
     def plot_state(self, point, color):
         pass
@@ -408,7 +483,7 @@ class Window(QWidget):
             y.append(points[i][1])
         pen = pen = pg.mkPen(color=color, width=width)
         self.contentFrame.graphWidget.disableAutoRange()
-        self.contentFrame.graphWidget.plot(x,y,name='name', pen=pen)
+        self.contentFrame.graphWidget.plot(x,y,name='plot_path', pen=pen)
 
     def plot_crossing(self, points, color):
         x = []
@@ -417,7 +492,13 @@ class Window(QWidget):
             x.append(points[i][0])
             y.append(points[i][1])
         pen = pen = pg.mkPen(color=color, width=4)
-        self.contentFrame.graphWidget.plot(x,y,name='name', pen=pen)
+        self.contentFrame.graphWidget.plot(x,y,name='plot_crossing', pen=pen)
+
+    def delete_computed(self):
+        for item in self.contentFrame.graphWidget.listDataItems():
+            if item.name() == 'plot_path' or 'plot_first' or 'plot_last' or 'plot_upper' or 'plot_crossing':
+                self.contentFrame.graphWidget.removeItem(item)
+        pass
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

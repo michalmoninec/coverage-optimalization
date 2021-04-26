@@ -38,24 +38,9 @@ def normalize(data):
         normalized.append([normalized_x[i],normalized_y[i]])
     return normalized
 
-def xmeans_clustering(data, max_count):
-    # print(20*'-')
-    # print(f"input to clustering: {data}")
+def xmeans_clustering(data):
+# def xmeans_clustering(data,init_count, max_count, crit_type, core_acc):
 
-    # data = np.round(np.array(data),4)
-
-
-    # print(f"data agter round: {data}")
-    # print(20*'-')
-
-    # data = normalize(data)
-    
-
-    # print(f"data after normalization: {data}")
-
-    # data = np.round(np.array(data),4)
-
-    # print(f"data after round {data}")
 
     amount_initial_centers = 4
 
@@ -64,7 +49,6 @@ def xmeans_clustering(data, max_count):
     # MINIMUM_NOISELESS_DESCRIPTION_LENGTH
     # BAYESIAN_INFORMATION_CRITERION
 
-    # xmeans_instance = xmeans(data, initial_centers, tolerance=0.1, kmax=100, criterion=splitting_type.MINIMUM_NOISELESS_DESCRIPTION_LENGTH, ccore=False)
     xmeans_instance = xmeans(data, initial_centers, tolerance=0.1, kmax=8, criterion=splitting_type.BAYESIAN_INFORMATION_CRITERION, ccore=False)
 
     xmeans_instance.process()
@@ -72,9 +56,6 @@ def xmeans_clustering(data, max_count):
 
     clusters = xmeans_instance.get_clusters()
     centers = xmeans_instance.get_centers()
-
-    # print(f"centers loooks liike: {centers}")
-    # print(f"clusters looks like: {clusters}")
 
     print(f"Number of cluster after clustering: {len(clusters)}")
     clusters_count = len(clusters)

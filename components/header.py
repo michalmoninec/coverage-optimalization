@@ -20,6 +20,8 @@ class HeaderWidget(QWidget):
         self.infoTable = InfoTable()
         self.settingsButtons = QWidget()
         self.backButtonWidget = QWidget()
+        self.backToLoaderButton = PushButton('Back to loader')
+        self.backToLoaderWidget = QWidget()
         
         
         self.build()
@@ -42,8 +44,14 @@ class HeaderWidget(QWidget):
         backButtonlayout.addWidget(self.backButton, alignment=Qt.AlignRight | Qt.AlignTop)
         self.backButtonWidget.setLayout(backButtonlayout)
 
+        backToLoaderLayout = QHBoxLayout()
+        backToLoaderLayout.addStretch(1)
+        backToLoaderLayout.addWidget(self.backToLoaderButton)
+        self.backToLoaderWidget.setLayout(backToLoaderLayout)
+
         self.settingsToggle.addWidget(self.backButtonWidget)
         self.settingsToggle.addWidget(self.settingsButtons)
+        self.settingsToggle.addWidget(self.backToLoaderWidget)
 
         settingsArea.addWidget(self.settingsToggle)
 

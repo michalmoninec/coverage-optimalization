@@ -180,7 +180,7 @@ class GraphData():
 
     def set_coords(self, file_name):
         self.file_name = file_name
-        with open(file_name) as f:
+        with open(file_name, encoding='utf-8') as f:
             doc = parser.parse(f).getroot()
 
         # coor = doc.Document.Placemark.LineString.coordinates.text
@@ -204,8 +204,8 @@ class GraphData():
 
         xmin = min(x)
         ymin = min(y)
-        print('min x =  {}'.format(xmin))
-        print('min y =  {}'.format(ymin))
+        # print('min x =  {}'.format(xmin))
+        # print('min y =  {}'.format(ymin))
 
         x = [x-xmin for x in x]
         y = [y-ymin for y in y]

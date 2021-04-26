@@ -50,7 +50,7 @@ def selection_parents(population, fitness_func):
     while not_found:
         parents = choices(
             population=population,
-            weights= [ (1/fitness_func(gene)) for gene in population],
+            weights= [ (1/(fitness_func(gene)**2)) for gene in population],
             k = 2)
         if parents[0] != parents[1]:
             not_found = False
