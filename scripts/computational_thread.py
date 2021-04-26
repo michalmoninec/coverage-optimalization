@@ -234,3 +234,18 @@ class GeneticThread(QThread):
         self.seq = seq
         self.areas = areas_nodes
         self.node_graph = node_graph
+
+
+class PlotThread(QThread):
+    def __init__(self, content):
+        QThread.__init__(self)
+        self.content = content
+
+    def __del__(self):
+        self.wait()
+
+    def run(self):
+        for item in self.content.graphWidget.listDataItems():
+            if item.name() != 'plot':
+                self.content.graphWidget.removeItem(item)
+

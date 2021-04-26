@@ -11,7 +11,7 @@ from scripts.xmeans import xmeans_clustering
 from scripts.sub_areas import Areas
 from scripts.node_graph import NodeGraph
 from scripts.genetic import run_evolution
-from scripts.computational_thread import ClusteringThread, ComputationalThread, GeneticThread, VisibilityGraphThread
+from scripts.computational_thread import ClusteringThread, ComputationalThread, GeneticThread, PlotThread, VisibilityGraphThread
 
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QFileDialog, \
@@ -174,7 +174,9 @@ class Window(QWidget):
             self.visibility_thread.terminate()
         elif self.genetic_thread.isRunning():
             self.genetic_thread.terminate()
-        pass
+        elif self.genetic_thread_a.isRunning():
+            self.genetic_thread_a.terminate()
+
         # self.compThread.terminate()
         # self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.settingsMenu)
         # self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.graphWrapper)
@@ -200,6 +202,8 @@ class Window(QWidget):
         self.showsettings()
         self.headerFrame.deleteGraphButton.setEnabled(False)
         self.headerFrame.backButton.setEnabled(False)
+        self.contentFrame.startButton.setText('Start plot')
+        self.contentFrame.calculateGA.hide()
 
     def backtograph(self):
         # print('Helo there')
@@ -270,23 +274,32 @@ class Window(QWidget):
             self.plot_first(paths[0][0], [0,150,0])
             self.plot_last(paths[-1][-1], [150,0,0])
 
-
-
-    def clustering_finished(self, cluster_thread):
+    def plot_parallels(self, areas):
         colors = self.colors
-        for i in range(len(cluster_thread.areas.areas)):
-            parallels = cluster_thread.areas.areas[i]
+        for i in range(len(areas)):
+            parallels = areas[i]
             color = colors[i]
             for k in range(len(parallels)):
                 parallel = parallels[k]
                 self.plot((parallel.upper_point[0],parallel.lower_point[0]),(parallel.upper_point[1],parallel.lower_point[1]) , color, "plot")
+
+    def clustering_finished(self, cluster_thread):
+        self.plot_parallels(cluster_thread.areas.areas)
+        self.parallels_plot = cluster_thread.areas.areas
+        # colors = self.colors
+        # for i in range(len(cluster_thread.areas.areas)):
+        #     parallels = cluster_thread.areas.areas[i]
+        #     color = colors[i]
+        #     for k in range(len(parallels)):
+        #         parallel = parallels[k]
+        #         self.plot((parallel.upper_point[0],parallel.lower_point[0]),(parallel.upper_point[1],parallel.lower_point[1]) , color, "plot")
 
         self.visibility_thread = VisibilityGraphThread(cluster_thread.graph, cluster_thread.width, cluster_thread.areas)
         self.visibility_thread.start()
         self.visibility_thread.finished.connect(lambda: self.visibility_graph_finished(self.visibility_thread))
         
     def visibility_graph_finished(self, vis_thread):
-        print('Dodelal jsem visibility thread')
+        # print('Dodelal jsem visibility thread')
         trd = vis_thread
         self.ga_graph = trd.graph
         self.ga_width = trd.width
@@ -299,24 +312,47 @@ class Window(QWidget):
         self.contentFrame.startButton.setText('Start *NEW* plot')
 
     def genetic_finished(self, genetic_thread):
-        print('Dodelal jsem aji genetak, to jsem pasak.')
+        # print('Dodelal jsem aji genetak, to jsem pasak.')
         ga = genetic_thread
         self.algorithm_finished(ga.seq, ga.areas, ga.node_graph)
         self.contentFrame.calculateGA.show()
 
+
+    def plot_deleted(self):
+        self.genetic_thread_a.start()
+        self.contentFrame.previewButton.setDisabled(False)
+
     def compute_ga(self):
+        self.contentFrame.previewButton.setDisabled(True)
+        self.delete_plot = PlotThread(self.contentFrame)
+        self.genetic_thread_a = GeneticThread(self.ga_graph, self.ga_width, self.ga_areas, self.ga_node_graph)
         
+        
+        self.delete_plot.finished.connect(lambda: self.plot_deleted())
+        self.genetic_thread_a.finished.connect(lambda: self.genetic_finished(self.genetic_thread_a))
+        self.delete_plot.start()
+        # self.contentFrame.graphWidget.clear()
+        
+
         self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.stopSimulationWidget)
         self.headerFrame.advancedOptions.setDisabled(True)
+        self.headerFrame.backButton.setDisabled(True)
 
-        self.genetic_thread = GeneticThread(self.ga_graph, self.ga_width, self.ga_areas, self.ga_node_graph)
-        self.genetic_thread.finished.connect(lambda: self.genetic_finished(self.genetic_thread))
-        self.genetic_thread.start()
 
+        # self.genetic_thread_a.start()
 
         
-        # self.delete_computed()
+    def plot_inner_outer(self):
+        graph = self.graph_data
 
+        self.plot(graph.outer_plot[0],graph.outer_plot[1], 'b', 'plot')
+        # self.plot_second(graph.outer_plot[0],graph.outer_plot[1], 'b', 'outer')
+
+        for i in range(len(graph.inner_plot)):
+            self.plot(graph.inner_plot[i][0], graph.inner_plot[i][1], 'r', 'plot')
+
+        
+        pass
 
 
     def set_complete_file(self):
@@ -327,11 +363,13 @@ class Window(QWidget):
         if(self.get_graph_data()):
             graph.get_outer_inner()
 
-            self.plot(graph.outer_plot[0],graph.outer_plot[1], 'b', 'outer')
-            # self.plot_second(graph.outer_plot[0],graph.outer_plot[1], 'b', 'outer')
+            self.plot_inner_outer()
 
-            for i in range(len(graph.inner_plot)):
-                self.plot(graph.inner_plot[i][0], graph.inner_plot[i][1], 'r', 'inner'+str(i))
+            # self.plot(graph.outer_plot[0],graph.outer_plot[1], 'b', 'outer')
+            # # self.plot_second(graph.outer_plot[0],graph.outer_plot[1], 'b', 'outer')
+
+            # for i in range(len(graph.inner_plot)):
+            #     self.plot(graph.inner_plot[i][0], graph.inner_plot[i][1], 'r', 'inner'+str(i))
 
             # self.compThread = ComputationalThread(graph, width)
             # self.compThread.start()

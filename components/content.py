@@ -203,6 +203,7 @@ class ContentWidget(QWidget):
         stopSimulationLayout.addWidget(self.stopButton)
         stopSimulationLayout.addStretch(1)
 
+
         stopSimulationLayoutWrapper.addStretch(1)
         stopSimulationLayoutWrapper.addLayout(stopSimulationLayout)
         stopSimulationLayoutWrapper.addStretch(1)

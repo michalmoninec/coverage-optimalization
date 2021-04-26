@@ -148,9 +148,9 @@ def swap_2_opt(arr, fitness_func):
 
     pass
 
-def GA_with_2_opt(population, evo_limit, fitness_func, sol_arr, best_val, solution, start, time_limit):
+def GA_with_2_opt(population, evo_limit, fitness_func, sol_arr, best_val, solution, start, time_limit, index_arr):
     print('Im doint 2-opt type of GA')
-    for _ in range(evo_limit):
+    for i in range(evo_limit):
         i_start = time.time()
         if i_start-start>time_limit:
             print(f'End due to time limit.')
@@ -165,6 +165,7 @@ def GA_with_2_opt(population, evo_limit, fitness_func, sol_arr, best_val, soluti
             solution = population[0]
             best_val = fitness_func(population[0])
             sol_arr.append(fitness_func(population[0]))
+            index_arr.append(i)
 
         parents = selection_parents(population, fitness_func)
         # print(f'parents selected are: {parents}')
@@ -186,9 +187,9 @@ def GA_with_2_opt(population, evo_limit, fitness_func, sol_arr, best_val, soluti
         print(f'One iteration of GA lasts: {i_end - i_start}')
     return solution
 
-def GA_with_elitism_multi_parents(population, evo_limit, fitness_func, sol_arr, best_val, solution, start, time_limit):
+def GA_with_elitism_multi_parents(population, evo_limit, fitness_func, sol_arr, best_val, solution, start, time_limit, index_arr):
     print('Im doint elitism type of GA.')
-    for _ in range(evo_limit):
+    for i in range(evo_limit):
         i_start = time.time()
         if i_start-start>time_limit:
             print(f'End due to time limit.')
@@ -200,10 +201,11 @@ def GA_with_elitism_multi_parents(population, evo_limit, fitness_func, sol_arr, 
             solution = population[0]
             best_val = fitness_func(population[0])
             sol_arr.append(fitness_func(population[0]))
+            index_arr.append(i)
 
         children = []
 
-        for i in range(round(len(population)/2)):
+        for _ in range(round(len(population)/2)):
             parents = selection_parents(population, fitness_func)
 
             child = gsx_crossover(parents)
@@ -222,15 +224,16 @@ def run_evolution(genome_len, evo_limit, fitness_func, pop_size, time_limit, gen
     population = init_population(genome_len, pop_count = pop_size)
     solution = None
     sol_arr = []
+    index_arr = []
     best_val = math.inf
 
     start = time.time()
 
     # solution = GA_with_2_opt(population, evo_limit, fitness_func, sol_arr, best_val, solution)
     if genetic_type == 0:
-        solution = GA_with_elitism_multi_parents(population, evo_limit, fitness_func, sol_arr, best_val, solution, start, time_limit)
+        solution = GA_with_elitism_multi_parents(population, evo_limit, fitness_func, sol_arr, best_val, solution, start, time_limit, index_arr)
     elif genetic_type == 1:
-        solution = GA_with_2_opt(population, evo_limit, fitness_func, sol_arr, best_val, solution, start, time_limit)
+        solution = GA_with_2_opt(population, evo_limit, fitness_func, sol_arr, best_val, solution, start, time_limit, index_arr)
 
 
         
@@ -241,7 +244,7 @@ def run_evolution(genome_len, evo_limit, fitness_func, pop_size, time_limit, gen
 
     time_needed = end - start
     # print(f'best seq try out: {best_seq}')
-    for item in sol_arr:
-        print(f'Iteration value: {item}')
+    for i in range(len(sol_arr)):
+        print(f'Iteration value: {sol_arr[i]} at index {index_arr[i]}')
     return best_seq, time_needed
 
