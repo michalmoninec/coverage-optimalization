@@ -42,14 +42,14 @@ def xmeans_clustering(data):
 # def xmeans_clustering(data,init_count, max_count, crit_type, core_acc):
 
 
-    amount_initial_centers = 4
+    amount_initial_centers = 2
 
     initial_centers = kmeans_plusplus_initializer(data, amount_initial_centers).initialize()
 
     # MINIMUM_NOISELESS_DESCRIPTION_LENGTH
     # BAYESIAN_INFORMATION_CRITERION
 
-    xmeans_instance = xmeans(data, initial_centers, tolerance=0.1, kmax=8, criterion=splitting_type.BAYESIAN_INFORMATION_CRITERION, ccore=False)
+    xmeans_instance = xmeans(data, initial_centers, tolerance=0.1, kmax=3, criterion=splitting_type.BAYESIAN_INFORMATION_CRITERION, ccore=False)
 
     xmeans_instance.process()
 

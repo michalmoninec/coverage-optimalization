@@ -161,6 +161,7 @@ class Areas():
         sub_areas = []
         for i in range(len(self.areas)):
             sub_areas.append(SubArea(self.areas[i]))
+        print(f'All clusters: {len(sub_areas)}')
         self.sub_areas = sub_areas
 
     def get_sub_areas(self, tracks, clusters, objects):

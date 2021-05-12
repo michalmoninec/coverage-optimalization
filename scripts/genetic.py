@@ -217,7 +217,7 @@ def GA_with_elitism_multi_parents(population, evo_limit, fitness_func, sol_arr, 
         # print(f'next population looks: {population}')
         
         i_end = time.time()
-        print(f'One iteration of GA lasts: {i_end - i_start}')
+        # print(f'One iteration of GA lasts: {i_end - i_start}')
     return solution
 
 def run_evolution(genome_len, evo_limit, fitness_func, pop_size, time_limit, genetic_type):
@@ -245,6 +245,6 @@ def run_evolution(genome_len, evo_limit, fitness_func, pop_size, time_limit, gen
     time_needed = end - start
     # print(f'best seq try out: {best_seq}')
     for i in range(len(sol_arr)):
-        print(f'Iteration value: {sol_arr[i]} at index {index_arr[i]}')
+        print(f'Iteration value: {sol_arr[i]} at iteraion number:  {index_arr[i]}')
     return best_seq, time_needed
 

@@ -6,7 +6,7 @@ import matplotlib as mpl
 import utm
 import numpy as np
 import math
-from shapely.geometry import Polygon, LineString
+from shapely.geometry import Polygon, LineString, LinearRing
 from copy import deepcopy
 
 #dump this after changing data types of outer, inner
@@ -248,6 +248,32 @@ class GraphData():
 
         for i in range(len(self.inner)):
             self.inner_plot.append(data_to_print(self.inner[i]))
+
+        poly = LinearRing(self.outer)
+        line = LineString(self.outer)
+        offset = self.width/2
+
+        if poly.is_ccw:
+            line = line.parallel_offset(offset,'left')
+            self.outer = list(line.coords)
+        else:
+            line = line.parallel_offset(offset, 'right')
+            self.outer = list(line.coords[::-1])
+        
+        
+
+        for index, inner in enumerate(self.inner):
+            poly = LinearRing(inner)
+            line = LineString(inner)
+            if poly.is_ccw:
+                line = line.parallel_offset(offset,'right')
+                self.inner[index] = list(line.coords[::-1])
+               
+            else:
+                line = line.parallel_offset(offset, 'left')
+                self.inner[index] = list(line.coords)
+        
+
 
     def scale_inner(self):
         inner = self.inner

@@ -117,6 +117,8 @@ class ClusteringThread(QThread):
             # print(f"tracks lookalike: {tracks.paralels}")
         tracks.getUpperPoints()
 
+        self.tracks = tracks
+
         arr = []
         input_arr = []
 
@@ -132,6 +134,7 @@ class ClusteringThread(QThread):
             objects.append(item)
 
         areas = Areas(tracks.paralels, clusters, objects, width, None, graph.outer_index)
+        print(f'Number of clusters: {clusters_count}')
 
         self.areas = areas
 

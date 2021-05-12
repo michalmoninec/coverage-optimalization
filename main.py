@@ -1,5 +1,8 @@
 from os import name
+from os.path import join
 from random import sample
+
+from shapely.geometry.polygon import LinearRing, LineString
 from graph import GraphData
 from paralel_tracks import ParalelTracks
 # from components.infoTable import InfoTable
@@ -240,14 +243,89 @@ class Window(QWidget):
         if seq:
             seq_areas = [areas_nodes[ind] for ind in seq ]
             final_seq, final_val = node_graph.get_value(seq_areas)
-            print(f'genetic best solution: {final_val}')
+            # print(f'genetic best solution: {final_val}')
             # print(f'Time needed for GA: {time_genetic}')
             paths, states, paths_m = self.switch_seq(areas_nodes, final_seq, node_graph)
+
+            
+            paths_exo = []
+            for index, path in enumerate(paths):
+                paths_iter = []
+                i = 0
+                if len(path)>3:
+                # while i < len(path)-2:
+                    while i < len(path)-2:
+                    # if len(path)>3:
+                        if i == 0:
+                            line = LineString([path[i],path[i+1],path[i+2],path[i+3]])
+                            linering = LinearRing([path[i],path[i+1],path[i+2],path[i+3]])
+
+                            if linering.is_ccw:
+                                line = line.parallel_offset(self.graph_data.width/2.1,'left')
+                                line2 = LineString(line.coords)
+                                line2 = line2.parallel_offset(self.graph_data.width/2.1, 'right')
+                                coords = list(line2.coords[::-1])
+                                paths_iter = paths_iter + coords[0:-1]
+                                
+                            else:
+                                line = line.parallel_offset(self.graph_data.width/2.1,'right')
+                                line2 = LineString(line.coords)
+                                line2 = line2.parallel_offset(self.graph_data.width/2.1, 'right')
+                                coords = list(line2.coords)
+                                paths_iter = paths_iter + coords[0:-1]
+                            
+                            i = i+3
+                            if i+3>len(path):
+                                k = deepcopy(i)
+                                while k<len(path):
+                                    paths_iter.append(path[k])
+                                    # print(f'paths iter looks: {paths_iter}')
+                                    k = k+1
+                        else:
+                            # print(f'focking i is: {i}')
+                            line = LineString([paths_iter[-1], path[i], path[i+1], path[i+2]])
+                            linering = LinearRing([paths_iter[-1],path[i], path[i+1], path[i+2]])
+
+                            if linering.is_ccw:
+                                line = line.parallel_offset(self.graph_data.width/2.1,'left')
+                                line2 = LineString(line.coords)
+                                line2 = line2.parallel_offset(self.graph_data.width/2.1, 'right')
+                                coords = list(line2.coords[::-1])
+                                paths_iter = paths_iter + coords[0:-1]
+                                
+                            else:
+                                line = line.parallel_offset(self.graph_data.width/2.1,'right')
+                                line2 = LineString(line.coords)
+                                line2 = line2.parallel_offset(self.graph_data.width/2.1, 'right')
+                                coords = list(line2.coords)
+                                paths_iter = paths_iter + coords[0:-1]                            
+                            
+                            i = i+2
+
+                            if i+2>len(path):
+                                k = deepcopy(i)
+                                while k<len(path):
+                                    paths_iter.append(path[k])
+                                    # print(f'paths iter looks: {paths_iter}')
+                                    k = k+1
+                else:
+                    paths_iter = paths_iter + path
+                paths_exo.append(paths_iter)
+                # print(f'paths to print looks: {paths_exo}')
+
+
+
+
+
+
+
+
+
 
             #KONEC THREADU
             ##############
 
-
+            
             # percentage = ((final_val - exact_val)/(max_val - exact_val))*100
             # print(f'percentage difference: {round(percentage,2)}')
             colors = []
@@ -256,10 +334,13 @@ class Window(QWidget):
             self.colors = colors
 
             colors = self.colors
+
+            for index, p in enumerate(paths_exo):
+                self.plot_path(p, self.colors[index], 4)
             
-            output_points = []
+            # output_points = []
             for index, path in enumerate(paths):
-                self.plot_path(path, colors[index], 2)
+                # self.plot_path(path, colors[index], 2)
                 self.plot_upper(path[0], [0,150,0])
                 self.plot_upper(path[-1], [150,0,0])
                 if index < (len(paths)-1):
@@ -267,9 +348,10 @@ class Window(QWidget):
                     self.plot_crossing(points,[150,0,0])
                     # self.test_plot_lines(points, node_graph)
             
-            # print(f'paths_m {paths_m}')
-            for path_m in paths_m:
-                self.plot_path(path_m, [0,0,150], 5)
+            # # print(f'paths_m {paths_m}')
+
+            for index, path_m in enumerate(paths_m):
+                self.plot_path(path_m, self.colors[index], 5)
             
             self.plot_first(paths[0][0], [0,150,0])
             self.plot_last(paths[-1][-1], [150,0,0])
@@ -281,11 +363,12 @@ class Window(QWidget):
             color = colors[i]
             for k in range(len(parallels)):
                 parallel = parallels[k]
-                self.plot((parallel.upper_point[0],parallel.lower_point[0]),(parallel.upper_point[1],parallel.lower_point[1]) , color, "plot")
+                self.plot((parallel.upper_point[0],parallel.lower_point[0]),(parallel.upper_point[1],parallel.lower_point[1]) , color, "plot_parallels")
 
     def clustering_finished(self, cluster_thread):
         self.plot_parallels(cluster_thread.areas.areas)
         self.parallels_plot = cluster_thread.areas.areas
+        self.tracks = cluster_thread.tracks
         # colors = self.colors
         # for i in range(len(cluster_thread.areas.areas)):
         #     parallels = cluster_thread.areas.areas[i]
@@ -305,6 +388,7 @@ class Window(QWidget):
         self.ga_width = trd.width
         self.ga_areas = trd.areas
         self.ga_node_graph = trd.node_graph
+        # self.tracks = trd.tracks
 
         self.genetic_thread = GeneticThread(trd.graph, trd.width, trd.areas, trd.node_graph)
         self.genetic_thread.start()
@@ -319,8 +403,16 @@ class Window(QWidget):
 
 
     def plot_deleted(self):
-        self.genetic_thread_a.start()
+        # self.genetic_thread_a.start()
+        # print(f'tracks looks: {self.tracks}')
+        # print(f'tracks looks: {self.tracks.paralels}')
+        for paralel in self.tracks.paralels:
+            self.plot(paralel[0],paralel[1], [0,150,0], 'plot')
         self.contentFrame.previewButton.setDisabled(False)
+
+        for upper in self.tracks.upper:
+            # print(f'upper point: {upper.point}')
+            self.plot_upper(upper.point, [0,150,0])
 
     def compute_ga(self):
         self.contentFrame.previewButton.setDisabled(True)
