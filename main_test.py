@@ -1,6 +1,7 @@
 from os import name
 from os.path import join
 from random import sample
+from xlwt import Workbook
 
 from shapely.geometry.polygon import LinearRing, LineString
 from graph import GraphData
@@ -99,7 +100,7 @@ class Window(QWidget):
         content.geneticType.cb.currentIndexChanged.connect(lambda index: self.geneticTypeChange(index))
         content.stopButton.clicked.connect(lambda: self.stopSimulation())
         content.previewButton.clicked.connect(lambda: self.getToPreview())
-        content.calculateGA.clicked.connect(self.compute_ga)
+        content.calculateGA.clicked.connect(lambda: self.compute_ga())
 
         content.advancedOptions.hide()
         content.graphWrapper.hide()
@@ -177,8 +178,14 @@ class Window(QWidget):
             self.visibility_thread.terminate()
         elif self.genetic_thread.isRunning():
             self.genetic_thread.terminate()
+        elif self.visibility_thread_a.isRunning():
+            self.visibility_thread_a.terminate()
         elif self.genetic_thread_a.isRunning():
             self.genetic_thread_a.terminate()
+
+        # self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.settingsMenu)
+        
+        
 
         # self.compThread.terminate()
         # self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.settingsMenu)
@@ -247,7 +254,7 @@ class Window(QWidget):
             # print(f'Time needed for GA: {time_genetic}')
             paths, states, paths_m = self.switch_seq(areas_nodes, final_seq, node_graph)
 
-            
+                       
             paths_exo = []
             for index, path in enumerate(paths):
                 paths_iter = []
@@ -314,6 +321,73 @@ class Window(QWidget):
                 # print(f'paths to print looks: {paths_exo}')
 
 
+            #VYHLAZENI CELE CESTY`
+            for i in range(len(paths_exo)-1):
+                path = paths_exo[i]
+                path_next = paths_exo[i+1]
+                path_b = paths_m[i]
+
+                path_pre = []
+                path_past = []
+
+                line = LineString([path[-2], path[-1], path_b[0], path_b[1]])
+                linering = LinearRing([path[-2], path[-1], path_b[0], path_b[1]])
+
+                if linering.is_ccw:
+                    line = line.parallel_offset(self.graph_data.width/2.1,'left')
+                    line2 = LineString(line.coords)
+                    line2 = line2.parallel_offset(self.graph_data.width/2.1, 'right')
+                    coords = list(line2.coords[::-1])
+                    path_pre = path_pre + coords
+                else:
+                    line = line.parallel_offset(self.graph_data.width/2.1,'right')
+                    line2 = LineString(line.coords)
+                    line2 = line2.parallel_offset(self.graph_data.width/2.1, 'right')
+                    coords = list(line2.coords)
+                    path_pre = path_pre + coords
+
+                path_b.pop(0)
+                path_b.pop(0)
+                # if i != 0:
+                #     paths_exo[i].pop(-1)
+                #     paths_exo[i].pop(-1)
+
+
+                path_b = path_pre + path_b
+
+                line = LineString([path_b[-2], path_b[-1], path_next[1]])
+                linering = LinearRing([path_b[-2], path_b[-1], path_next[1]])
+
+                if linering.is_ccw:
+                    line = line.parallel_offset(self.graph_data.width/2.1,'left')
+                    line2 = LineString(line.coords)
+                    line2 = line2.parallel_offset(self.graph_data.width/2.1, 'right')
+                    coords = list(line2.coords[::-1])
+                    path_past = path_past + coords
+                else:
+                    line = line.parallel_offset(self.graph_data.width/2.1,'right')
+                    line2 = LineString(line.coords)
+                    line2 = line2.parallel_offset(self.graph_data.width/2.1, 'right')
+                    coords = list(line2.coords)
+                    path_past = path_past + coords
+
+                path_b.pop(-1)
+                path_b.pop(-1)
+
+                path_b = path_b + path_past
+
+                # print(f'path expo looks: {paths_exo[i+1]}')
+                # print(f'element of path_b: {path_b[0]}')
+
+                paths_exo[i].pop(-1)
+                paths_exo[i].append(path_b[1])
+                path_b.pop(0)
+
+                paths_exo[i+1].pop(0)
+                paths_exo[i+1].insert(0, path_b[-2])
+                path_b.pop(-1)
+
+                paths_m[i] = path_b
 
 
 
@@ -339,19 +413,20 @@ class Window(QWidget):
                 self.plot_path(p, self.colors[index], 4)
             
             # output_points = []
-            for index, path in enumerate(paths):
-                # self.plot_path(path, colors[index], 2)
-                self.plot_upper(path[0], [0,150,0])
-                self.plot_upper(path[-1], [150,0,0])
-                if index < (len(paths)-1):
-                    points = [paths[index][-1], paths[index+1][0]]
-                    self.plot_crossing(points,[150,0,0])
-                    # self.test_plot_lines(points, node_graph)
+            # for index, path in enumerate(paths):
+            #     # self.plot_path(path, colors[index], 2)
+            #     # self.plot_upper(path[0], [0,150,0])
+            #     # self.plot_upper(path[-1], [150,0,0])
+            #     if index < (len(paths)-1):
+            #         points = [paths[index][-1], paths[index+1][0]]
+            #         # self.plot_crossing(points,[150,0,0])
+            #         # self.test_plot_lines(points, node_graph)
             
             # # print(f'paths_m {paths_m}')
 
             for index, path_m in enumerate(paths_m):
-                self.plot_path(path_m, self.colors[index], 5)
+            #     # self.plot_path(path_m, self.colors[index], 5)
+                self.plot_path(path_m, [0,0,150], 4)
             
             self.plot_first(paths[0][0], [0,150,0])
             self.plot_last(paths[-1][-1], [150,0,0])
@@ -366,16 +441,17 @@ class Window(QWidget):
                 self.plot((parallel.upper_point[0],parallel.lower_point[0]),(parallel.upper_point[1],parallel.lower_point[1]) , color, "plot_parallels")
 
     def clustering_finished(self, cluster_thread):
-        self.plot_parallels(cluster_thread.areas.areas)
+        # self.plot_parallels(cluster_thread.areas.areas)
+        self.plot_parallel_clean(cluster_thread.tracks.paralels, [0,150,0], 3)
+        self.plot_parallel_upper(cluster_thread.tracks.paralels, [0,150,0])
         self.parallels_plot = cluster_thread.areas.areas
-        self.tracks = cluster_thread.tracks
-        # colors = self.colors
-        # for i in range(len(cluster_thread.areas.areas)):
-        #     parallels = cluster_thread.areas.areas[i]
-        #     color = colors[i]
-        #     for k in range(len(parallels)):
-        #         parallel = parallels[k]
-        #         self.plot((parallel.upper_point[0],parallel.lower_point[0]),(parallel.upper_point[1],parallel.lower_point[1]) , color, "plot")
+        self.tracks = cluster_thread.tracks.paralels
+
+        # print(f'tracks looks: {self.tracks}')
+
+        self.cl_graph = cluster_thread.graph
+        self.cl_width = cluster_thread.width
+        self.cl_areas = cluster_thread.areas
 
         self.visibility_thread = VisibilityGraphThread(cluster_thread.graph, cluster_thread.width, cluster_thread.areas)
         self.visibility_thread.start()
@@ -391,15 +467,19 @@ class Window(QWidget):
         # self.tracks = trd.tracks
 
         self.genetic_thread = GeneticThread(trd.graph, trd.width, trd.areas, trd.node_graph)
-        self.genetic_thread.start()
         self.genetic_thread.finished.connect(lambda: self.genetic_finished(self.genetic_thread))
+        self.genetic_thread.start()
+        
         self.contentFrame.startButton.setText('Start *NEW* plot')
 
     def genetic_finished(self, genetic_thread):
-        # print('Dodelal jsem aji genetak, to jsem pasak.')
         ga = genetic_thread
-        self.algorithm_finished(ga.seq, ga.areas, ga.node_graph)
+        clean_plot = PlotThread(self.contentFrame)
         self.contentFrame.calculateGA.show()
+        clean_plot.finished.connect(lambda: self.algorithm_finished(ga.seq, ga.areas, ga.node_graph))
+        clean_plot.start()
+        self.contentFrame.calculateGA.show()
+        # self.stopSimulation()
 
 
     def plot_deleted(self):
@@ -410,18 +490,36 @@ class Window(QWidget):
             self.plot(paralel[0],paralel[1], [0,150,0], 'plot')
         self.contentFrame.previewButton.setDisabled(False)
 
-        for upper in self.tracks.upper:
-            # print(f'upper point: {upper.point}')
-            self.plot_upper(upper.point, [0,150,0])
+        # for upper in self.tracks.upper:
+        #     # print(f'upper point: {upper.point}')
+        #     self.plot_upper(upper.point, [0,150,0])
+
+    def deleted_compute(self):
+        # self.plot_deleted()
+        self.contentFrame.previewButton.setDisabled(False)
+        self.compute_ga_vis()
+
+    def compute_ga_vis(self):
+        self.visibility_thread_a = VisibilityGraphThread(self.cl_graph, self.cl_width, self.cl_areas)
+        self.visibility_thread_a.finished.connect(lambda: self.compute_ga_gen(self.visibility_thread_a))
+        self.visibility_thread_a.start()
+
+    def compute_ga_gen(self, vis):
+        if vis.node_graph:
+            self.genetic_thread_a = GeneticThread(vis.graph, vis.width, vis.areas, vis.node_graph)
+            self.genetic_thread_a.finished.connect(lambda: self.genetic_finished(self.genetic_thread_a))
+            self.genetic_thread_a.start()
+        else:
+            self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.settingsMenu)
 
     def compute_ga(self):
         self.contentFrame.previewButton.setDisabled(True)
         self.delete_plot = PlotThread(self.contentFrame)
-        self.genetic_thread_a = GeneticThread(self.ga_graph, self.ga_width, self.ga_areas, self.ga_node_graph)
+        # self.genetic_thread_a = GeneticThread(self.ga_graph, self.ga_width, self.ga_areas, self.ga_node_graph)
         
         
-        self.delete_plot.finished.connect(lambda: self.plot_deleted())
-        self.genetic_thread_a.finished.connect(lambda: self.genetic_finished(self.genetic_thread_a))
+        self.delete_plot.finished.connect(lambda: self.deleted_compute())
+        # self.genetic_thread_a.finished.connect(lambda: self.genetic_finished(self.genetic_thread_a))
         self.delete_plot.start()
         # self.contentFrame.graphWidget.clear()
         
@@ -451,6 +549,7 @@ class Window(QWidget):
         self.delete_graph()  
         graph = self.graph_data
         width = graph.width
+        # self.stopSimulation()
 
         if(self.get_graph_data()):
             graph.get_outer_inner()
@@ -466,7 +565,7 @@ class Window(QWidget):
             # self.compThread = ComputationalThread(graph, width)
             # self.compThread.start()
             # self.compThread.finished.connect(lambda: self.algorithm_finished(self.compThread.seq, self.compThread.areas, self.compThread.node_graph))
-
+            print(f'width is: {width}')
             self.clustering_thread = ClusteringThread(graph, width)
             self.clustering_thread.start()
             self.clustering_thread.finished.connect(lambda: self.clustering_finished(self.clustering_thread))
@@ -578,7 +677,7 @@ class Window(QWidget):
 
     #looks good
     def plot(self, x, y, color, name):
-        pen = pg.mkPen(color=color, width=2)
+        pen = pg.mkPen(color=color, width=3)
         self.contentFrame.graphWidget.plot(x, y, name=name, pen=pen)
 
     def plot_second(self, x, y, color, name):
@@ -603,6 +702,20 @@ class Window(QWidget):
         self.contentFrame.graphWidget.plot([point[0]],[point[1]], pen=None, symbol='o', symbolPen=pg.mkPen(color=color, width=0), symbolBrush=pg.mkBrush(color),symbolSize=15, name='plot_last')
     
     def plot_state(self, point, color):
+        pass
+
+    def plot_parallel_clean(self, parallels, color, width):
+        for line in parallels:
+            x = line[0]
+            y = line[1]
+            pen = pen = pg.mkPen(color=color, width=width)
+            self.contentFrame.graphWidget.disableAutoRange()
+            self.contentFrame.graphWidget.plot(x,y,name='plot_path', pen=pen)
+    
+    def plot_parallel_upper(self,parallels,color):
+        for line in parallels:
+            point = [line[0][1],line[1][1]]
+            self.contentFrame.graphWidget.plot([point[0]],[point[1]], pen=None, symbol='o', symbolPen=pg.mkPen(color=color, width=0), symbolBrush=pg.mkBrush(color),symbolSize=15, name='plot_first')
         pass
 
     def plot_path(self, points, color, width):

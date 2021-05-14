@@ -9,12 +9,14 @@ from scripts.node_graph import NodeGraph
 from scripts.sub_areas import Areas
 from paralel_tracks import ParalelTracks
 
+from copy import deepcopy
+
 class ComputationalThread(QThread):
     def __init__(self, graph, width):
         QThread.__init__(self)
         self.data = None
-        self.graph = graph
-        self.width = width
+        self.graph = deepcopy(graph)
+        self.width = deepcopy(width)
         self.seq = None
         self.areas = None
         self.node_graph = None
@@ -99,8 +101,8 @@ class ClusteringThread(QThread):
     def __init__(self, graph, width):
         QThread.__init__(self)
         self.data = None
-        self.graph = graph
-        self.width = width
+        self.graph = deepcopy(graph)
+        self.width = deepcopy(width)
         self.seq = None
         self.areas = None
         self.node_graph = None
@@ -110,6 +112,7 @@ class ClusteringThread(QThread):
         self.wait()
 
     def run(self):
+        print(f'running clustering')
         graph = self.graph
         width = self.width
 
@@ -142,10 +145,10 @@ class VisibilityGraphThread(QThread):
     def __init__(self, graph, width, areas):
         QThread.__init__(self)
         self.data = None
-        self.graph = graph
-        self.width = width
+        self.graph = deepcopy(graph)
+        self.width = deepcopy(width)
         self.seq = None
-        self.areas = areas
+        self.areas = deepcopy(areas)
         self.node_graph = None
 
 
@@ -194,11 +197,59 @@ class GeneticThread(QThread):
     def __init__(self, graph, width, areas, node_graph):
         QThread.__init__(self)
         self.data = None
-        self.graph = graph
-        self.width = width
+        self.graph = deepcopy(graph)
+        self.width = deepcopy(width)
         self.seq = None
-        self.areas = areas
+        self.areas = deepcopy(areas)
+        self.node_graph = deepcopy(node_graph)
+
+
+    def __del__(self):
+        self.wait()
+
+    def run(self):
+        graph = self.graph
+        width = self.width
+        areas = self.areas
+        node_graph = self.node_graph
+
+        sample_count = len(areas.sub_areas)
+
+        orig_seq = list(range(0,sample_count))
+
+        areas_nodes = []
+
+        for i in orig_seq:
+            areas_nodes.append(areas.sub_areas[i])
+
+        node_graph.set_areas(areas_nodes)
+
+
+        seq, time_genetic = run_evolution(sample_count, graph.genetic_limit, node_graph.get_value_fitness, graph.pop_size, time_limit=graph.time_limit, genetic_type=graph.genetic_type)
+
+        # print(f'final seq : {seq}')
+        seq_areas = [areas_nodes[ind] for ind in seq ]
+
+        
+
+        final_seq, final_val = node_graph.get_value(seq_areas)
+        print(f'genetic best solution: {final_val}')
+        print(f'Time needed for GA: {time_genetic}')
+
+
+        self.seq = seq
+        self.areas = areas_nodes
         self.node_graph = node_graph
+
+class GeneticThreadTest(QThread):
+    def __init__(self, graph, width, areas, node_graph):
+        QThread.__init__(self)
+        self.data = None
+        self.graph = deepcopy(graph)
+        self.width = deepcopy(width)
+        self.seq = None
+        self.areas = deepcopy(areas)
+        self.node_graph = deepcopy(node_graph)
 
 
     def __del__(self):

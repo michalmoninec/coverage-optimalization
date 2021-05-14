@@ -184,7 +184,7 @@ class NodeGraph():
 
 
     def get_dist_visibility(self, objects):
-        start = time.time()
+        # start = time.time()
         # print(f'objects before: {objects}')
         objects2 = [self.wrap_outer_polygon(objects[0])]
         # objects2 = objects[1:]
@@ -202,7 +202,7 @@ class NodeGraph():
             polys.append(col)
         # print(f'polys for visgraph: {polys}')
 
-        self.vis_graph.build(polys, status=False, workers=4)
+        self.vis_graph.build(polys, status=False)
 
 
 
@@ -210,6 +210,7 @@ class NodeGraph():
         # print(f'Time needed to crate vis graph: {end-start}')
 
     def get_distance(self, state1, state2):
+        print(f'calculating...')
         p1_end = state1[1]
         p2_start = state2[0]
 
@@ -224,52 +225,52 @@ class NodeGraph():
         dist = math.sqrt(x_diff*x_diff + y_diff*y_diff)
         
         # PART FOR VISIBILITY PATH
-        # dist2 = None
+        dist2 = None
         
-        # point1 = Point(x1,y1)
-        # point2 = Point(x2,y2)
+        point1 = Point(x1,y1)
+        point2 = Point(x2,y2)
 
-        # id1 = self.get_closest_polygon(point1)
-        # id2 = self.get_closest_polygon(point2)
+        id1 = self.get_closest_polygon(point1)
+        id2 = self.get_closest_polygon(point2)
 
-        # if id1 != None:
-        #     new_point_1, coords1 = self.move_point_from_polygon([x1,y1], id1)
-        #     point1 = vg.Point(new_point_1[0], new_point_1[1])
-        #     # print('Updated point1')
-        # else:
-        #     point1 = vg.Point(x1,y1)
+        if id1 != None:
+            new_point_1, coords1 = self.move_point_from_polygon([x1,y1], id1)
+            point1 = vg.Point(new_point_1[0], new_point_1[1])
+            # print('Updated point1')
+        else:
+            point1 = vg.Point(x1,y1)
 
-        # if id2 != None:
-        #     new_point_2, coords2 = self.move_point_from_polygon([x2,y2], id2)
-        #     point2 = vg.Point(new_point_2[0],new_point_2[1])
-        #     # print('Updated point2')
-        # else:
-        #     point2 = vg.Point(x2,y2)
+        if id2 != None:
+            new_point_2, coords2 = self.move_point_from_polygon([x2,y2], id2)
+            point2 = vg.Point(new_point_2[0],new_point_2[1])
+            # print('Updated point2')
+        else:
+            point2 = vg.Point(x2,y2)
 
-        # # line = LineString([(point1.x, point1.y),(point2.x, point2.y)])
-        # # interescts = False
-        # # for obj in self.polygons:
-        # #     if line.intersects(obj):
-        # #         intersects = True
+        # line = LineString([(point1.x, point1.y),(point2.x, point2.y)])
+        # interescts = False
+        # for obj in self.polygons:
+        #     if line.intersects(obj):
+        #         intersects = True
 
-        # # if intersects:
-        # try:
-        #     dist2 = self.vis_graph.shortest_path(point1, point2)
-        #     dist2[0] = vg.Point(x1,y1)
-        #     dist2[-1] = vg.Point(x2,y2)
-        # except Exception as e:
-        #     print(e)
-        #     pass
+        # if intersects:
+        try:
+            dist2 = self.vis_graph.shortest_path(point1, point2)
+            dist2[0] = vg.Point(x1,y1)
+            dist2[-1] = vg.Point(x2,y2)
+        except Exception as e:
+            print(e)
+            pass
 
-        # if dist2:
-        #     self.move_between_paths.append(dist2)
-        #     return self.compute_path_len(dist2), dist2
-        # else:
-        #     x_diff = x2 - x1
-        #     y_diff = y2 - y1
-        #     dist = math.sqrt(x_diff*x_diff + y_diff*y_diff)
-        #     self.move_between_paths.append([point1, point2])
-        #     return dist, [point1, point2]
+        if dist2:
+            self.move_between_paths.append(dist2)
+            return self.compute_path_len(dist2), dist2
+        else:
+            x_diff = x2 - x1
+            y_diff = y2 - y1
+            dist = math.sqrt(x_diff*x_diff + y_diff*y_diff)
+            self.move_between_paths.append([point1, point2])
+            return dist, [point1, point2]
 
         #PART FOR EUCLID DIFFERENCIES
         return dist, [vg.Point(x1,y1),vg.Point(x2,y2)]
@@ -331,7 +332,7 @@ class NodeGraph():
         # print(f'sxx {sxx}')
         # print(f'syy {syy}')
 
-        d_len = 0.1
+        d_len = 0.2
 
         # if not ccw:
         if sxx>0 and syy>0:
@@ -397,7 +398,7 @@ class NodeGraph():
         # print(f'polygons are: {self.objects[1:]}')
         # print(f'len of polygons : {len(polygons)}')
         id = None
-        crit = 0.2
+        crit = 0.1
 
 
         for index, polygon in enumerate(polygons):
@@ -413,9 +414,7 @@ class NodeGraph():
         # print(f'returning id: {id}')
         return id
     
-    def wrap_outer_polygon(self, polygon):
-        # print('This fucker will be wrapped by no one else than McGyver: {}'.format(polygon))
-        
+    def wrap_outer_polygon(self, polygon):        
         p1 = polygon[-1]
         p2 = polygon[-2]
 

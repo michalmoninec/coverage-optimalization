@@ -103,7 +103,7 @@ def run_test():
 
             node_graph.set_areas(areas_nodes)
 
-            exact_seq, exact_val, max_val, time_exact = node_graph.get_exact_solution(areas_nodes, sample_count)
+            # exact_seq, exact_val, max_val, time_exact = node_graph.get_exact_solution(areas_nodes, sample_count)
 
             seq, time_genetic = run_evolution(sample_count, number_of_generations, node_graph.get_value_fitness, population_size)
 
@@ -111,17 +111,9 @@ def run_test():
 
             final_seq, final_val = node_graph.get_value(seq_areas)
 
-            percentage = ((final_val - exact_val)/(max_val - exact_val))*100
-            percentage = round(percentage,2)
-
-            # print(50*'--')
-            # print(f'Time exact: {time_exact}')
-            # print(f'Time genetic: {time_genetic}')
-            # print(f'Percentage differnce: {percentage}')
-            # print(f'Number of samples: {sample_count}')
             print(50*'--')
             print('computing...')
-            sheet.write(d_angle+1+ii,index+1,percentage)
+
 
 run_test()
 print(f'Test completed. File saved.')
