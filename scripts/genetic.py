@@ -236,7 +236,7 @@ def GA_with_2_opt_test(population, evo_limit, fitness_func, sol_arr, best_val, s
         
         # print(f'Population after: {population}')
         i_end = time.time()
-        print(f'One iteration of GA lasts: {i_end - i_start}')
+        # print(f'One iteration of GA lasts: {i_end - i_start}')
     return solution
 
 def GA_with_elitism_multi_parents(population, evo_limit, fitness_func, sol_arr, best_val, solution, start, time_limit, index_arr):

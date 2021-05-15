@@ -184,6 +184,7 @@ class NodeGraph():
 
 
     def get_dist_visibility(self, objects):
+        print("Started visibility graph.")
         # start = time.time()
         # print(f'objects before: {objects}')
         objects2 = [self.wrap_outer_polygon(objects[0])]
@@ -210,7 +211,7 @@ class NodeGraph():
         # print(f'Time needed to crate vis graph: {end-start}')
 
     def get_distance(self, state1, state2):
-        print(f'calculating...')
+        # print(f'calculating...')
         p1_end = state1[1]
         p2_start = state2[0]
 

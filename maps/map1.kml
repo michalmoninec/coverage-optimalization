@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+    <name>Měření z Mapy.cz</name>
+    <open>1</open>
+    <description>
+    <![CDATA[
+        popisek
+    ]]>
+    </description>
+    <Style id="path"><LineStyle><color>b20000ff</color><width>6</width></LineStyle></Style>
+    <Style id="routepoint"><IconStyle><color>b20000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_square.png</href></Icon></IconStyle></Style>
+    <Style id="waypoint"><IconStyle><color>b20000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>
+    <Folder>
+        <name>1. část</name>
+        <visibility>1</visibility>
+        <open>1</open>
+        <Placemark><name>Měření z Mapy.cz</name><styleUrl>#path</styleUrl>
+        <LineString>
+            <tessellate>1</tessellate>
+            <coordinates>
+                17.8770048916,49.8769171536,269.0
+                17.8772798181,49.8769111186,269.0
+                17.8772811592,49.8768554628,269.0
+                17.8774219751,49.8768507689,269.0
+                17.8774259984,49.8769037426,269.0
+                17.8776231408,49.876897037,269.0
+                17.8776110709,49.8767066002,269.0
+                17.8770048916,49.8767086118,269.0
+                17.8770102561,49.8769305646,269.0
+                17.8770974278,49.8768614978,269.0
+                17.8772141039,49.8768561333,269.0
+                17.8772073984,49.8767421395,269.0
+                17.8770330548,49.8767434806,269.0
+                17.8770370781,49.8768199235,269.0
+                17.8770840168,49.8768199235,269.0
+                17.8771068156,49.8768675327,269.0
+                17.8771698475,49.8768943548,269.0
+                17.8772047162,49.8768943548,269.0
+                17.8772033751,49.8768762499,269.0
+                17.8771711886,49.8768796027,269.0
+                17.8771792352,49.8769064248,269.0
+                17.8775319457,49.8768594861,269.0
+                17.8775855899,49.876858145,269.0
+                17.8775815666,49.8767582327,269.0
+                17.8775265813,49.8767582327,269.0
+                17.8775306046,49.8768735677,269.0
+                17.8774434328,49.8767635971,269.0
+                17.8773012757,49.8767635971,269.0
+                17.8773066401,49.8767421395,269.0
+                17.877446115,49.8767448217,269.0
+                17.8774380684,49.8767803609,269.0
+            </coordinates>
+        </LineString>
+        </Placemark>
+    </Folder>
+</Document>
+</kml>
