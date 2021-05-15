@@ -79,6 +79,10 @@ def main():
 
     methods = [0, 1]
 
+    max_iter = len(methods)*25
+
+    iter = 0
+
     for method in methods:
         
         if method == 1:
@@ -91,7 +95,7 @@ def main():
 
         genetic_iter_limit = 5000
         sizes = [4, 8, 16, 32, 64]
-        genetic_time_limit = 1800
+        genetic_time_limit = 2500
         
         # 0 - elitism, 1 - 2-opt
         genetic_type = method
@@ -134,9 +138,12 @@ def main():
             for _ in range(5):
                 seq, time_genetic = run_evolution_test(sample_count, genetic_iter_limit, node_graph.get_value_fitness, genetic_popsize, genetic_time_limit, genetic_type, sheet, x_offset, y_offset)
                 x_offset = x_offset + 2
+                print(f'Iteration {iter}/{max_iter}')
+                iter = iter + 1
             x_offset = x_offset + 1
 
-    wb.save('test_number_1.xls')
+    wb.save('test_number_2.xls')
+    print(f'test done and saved')
 
 
 
