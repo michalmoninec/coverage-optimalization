@@ -159,13 +159,14 @@ class Window(QWidget):
     def widthInputCheck(self, text):
         if text:
             self.headerFrame.infoTable.width.setText(text)
-            if ',' in text:
-                out_text = text.replace(',','.')
-                # print(f"changed text: {out_text}")
-                # return text
-            else:
-                out_text = text
-            self.graph_data.setWidth(float(out_text))
+            # if ',' in text:
+            #     out_text = text.replace(',','.')
+            #     # print(f"changed text: {out_text}")
+            #     # return text
+            # else:
+            #     out_text = text
+            # self.graph_data.setWidth(float(out_text))
+            self.graph_data.setWidth(float(text.replace(",",".")))
 
     def geneticInputChange(self, text):
         if text:
@@ -183,7 +184,8 @@ class Window(QWidget):
         elif self.genetic_thread_a.isRunning():
             self.genetic_thread_a.terminate()
 
-        # self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.settingsMenu)
+
+        self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.settingsMenu)
         
         
 
@@ -330,61 +332,64 @@ class Window(QWidget):
                 path_pre = []
                 path_past = []
 
-                line = LineString([path[-2], path[-1], path_b[0], path_b[1]])
-                linering = LinearRing([path[-2], path[-1], path_b[0], path_b[1]])
+                line = LineString([path[-2], path_b[0], path_b[1]])
+                linering = LinearRing([path[-2], path_b[0], path_b[1]])
 
                 if linering.is_ccw:
-                    line = line.parallel_offset(self.graph_data.width/2.1,'left')
-                    line2 = LineString(line.coords)
-                    line2 = line2.parallel_offset(self.graph_data.width/2.1, 'right')
-                    coords = list(line2.coords[::-1])
-                    path_pre = path_pre + coords
+                    line1 = line.parallel_offset(self.graph_data.width/2.2,'left')
+                    if len(line1.coords)>1:
+                        line2 = LineString(line1.simplify(0).coords)
+                        line2 = line2.parallel_offset(self.graph_data.width/2.2, 'right')
+                        coords = list(line2.coords[::-1])
+                    else:
+                        coords = list(line.coords)
+                    path_past = path_past + coords
                 else:
-                    line = line.parallel_offset(self.graph_data.width/2.1,'right')
-                    line2 = LineString(line.coords)
-                    line2 = line2.parallel_offset(self.graph_data.width/2.1, 'right')
-                    coords = list(line2.coords)
-                    path_pre = path_pre + coords
-
-                path_b.pop(0)
-                path_b.pop(0)
-                # if i != 0:
-                #     paths_exo[i].pop(-1)
-                #     paths_exo[i].pop(-1)
+                    line1 = line.parallel_offset(self.graph_data.width/2.2,'right')
+                    if len(line1.coords)>1:
+                        line2 = LineString(line1.simplify(0).coords)
+                        line2 = line2.parallel_offset(self.graph_data.width/2.2, 'right')
+                        coords = list(line2.coords)
+                    else:
+                        coords = list(line.coords)
+                    path_past = path_past + coords
 
 
-                path_b = path_pre + path_b
+                path_b = path_past + path_b[2:]
 
                 line = LineString([path_b[-2], path_b[-1], path_next[1]])
                 linering = LinearRing([path_b[-2], path_b[-1], path_next[1]])
 
                 if linering.is_ccw:
-                    line = line.parallel_offset(self.graph_data.width/2.1,'left')
-                    line2 = LineString(line.coords)
-                    line2 = line2.parallel_offset(self.graph_data.width/2.1, 'right')
-                    coords = list(line2.coords[::-1])
-                    path_past = path_past + coords
+                    line1 = line.parallel_offset(self.graph_data.width/2.2,'left')
+                    if len(line1.coords)>1:
+                        line2 = LineString(line1.simplify(0).coords)
+                        line2 = line2.parallel_offset(self.graph_data.width/2.2, 'right')
+                        coords = list(line2.coords[::-1])
+                    else:
+                        coords = list(line.coords)
+                    path_pre = path_pre + coords
                 else:
-                    line = line.parallel_offset(self.graph_data.width/2.1,'right')
-                    line2 = LineString(line.coords)
-                    line2 = line2.parallel_offset(self.graph_data.width/2.1, 'right')
-                    coords = list(line2.coords)
-                    path_past = path_past + coords
+                    line1 = line.parallel_offset(self.graph_data.width/2.2,'right')
+                    if len(line1.coords)>1:
+                        line2 = LineString(line1.simplify(0).coords)
+                        line2 = line2.parallel_offset(self.graph_data.width/2.2, 'right')
+                        coords = list(line2.coords)
+                    else:
+                        coords = list(line.coords)
+                    path_pre = path_pre + coords
 
-                path_b.pop(-1)
-                path_b.pop(-1)
 
-                path_b = path_b + path_past
-
-                # print(f'path expo looks: {paths_exo[i+1]}')
-                # print(f'element of path_b: {path_b[0]}')
+                path_b = path_b[:-2] + path_pre
 
                 paths_exo[i].pop(-1)
                 paths_exo[i].append(path_b[1])
-                path_b.pop(0)
+                
 
                 paths_exo[i+1].pop(0)
                 paths_exo[i+1].insert(0, path_b[-2])
+
+                path_b.pop(0)
                 path_b.pop(-1)
 
                 paths_m[i] = path_b
@@ -441,9 +446,9 @@ class Window(QWidget):
                 self.plot((parallel.upper_point[0],parallel.lower_point[0]),(parallel.upper_point[1],parallel.lower_point[1]) , color, "plot_parallels")
 
     def clustering_finished(self, cluster_thread):
-        # self.plot_parallels(cluster_thread.areas.areas)
-        self.plot_parallel_clean(cluster_thread.tracks.paralels, [0,150,0], 3)
-        self.plot_parallel_upper(cluster_thread.tracks.paralels, [0,150,0])
+        self.plot_parallels(cluster_thread.areas.areas)
+        # self.plot_parallel_clean(cluster_thread.tracks.paralels, [0,150,0], 3)
+        # self.plot_parallel_upper(cluster_thread.tracks.paralels, [0,150,0])
         self.parallels_plot = cluster_thread.areas.areas
         self.tracks = cluster_thread.tracks.paralels
 
@@ -496,23 +501,31 @@ class Window(QWidget):
 
     def deleted_compute(self):
         # self.plot_deleted()
+        self.plot_parallels(self.cl_areas.areas)
         self.contentFrame.previewButton.setDisabled(False)
-        self.compute_ga_vis()
+        # self.compute_ga_vis()
+        self.compute_ga_gen()
+
 
     def compute_ga_vis(self):
         self.visibility_thread_a = VisibilityGraphThread(self.cl_graph, self.cl_width, self.cl_areas)
         self.visibility_thread_a.finished.connect(lambda: self.compute_ga_gen(self.visibility_thread_a))
         self.visibility_thread_a.start()
 
-    def compute_ga_gen(self, vis):
-        if vis.node_graph:
-            self.genetic_thread_a = GeneticThread(vis.graph, vis.width, vis.areas, vis.node_graph)
-            self.genetic_thread_a.finished.connect(lambda: self.genetic_finished(self.genetic_thread_a))
-            self.genetic_thread_a.start()
-        else:
-            self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.settingsMenu)
+    # def compute_ga_gen(self, vis):
+    #     if vis.node_graph:
+    #         self.genetic_thread_a = GeneticThread(vis.graph, vis.width, vis.areas, vis.node_graph)
+    #         self.genetic_thread_a.finished.connect(lambda: self.genetic_finished(self.genetic_thread_a))
+    #         self.genetic_thread_a.start()
+    #     else:
+    #         self.contentFrame.contentStack.setCurrentWidget(self.contentFrame.settingsMenu)
+    def compute_ga_gen(self):
+        self.genetic_thread_a = GeneticThread(self.ga_graph, self.ga_width, self.ga_areas, self.ga_node_graph)
+        self.genetic_thread_a.finished.connect(lambda: self.genetic_finished(self.genetic_thread_a))
+        self.genetic_thread_a.start()
 
     def compute_ga(self):
+        
         self.contentFrame.previewButton.setDisabled(True)
         self.delete_plot = PlotThread(self.contentFrame)
         # self.genetic_thread_a = GeneticThread(self.ga_graph, self.ga_width, self.ga_areas, self.ga_node_graph)

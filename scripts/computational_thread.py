@@ -175,7 +175,7 @@ class VisibilityGraphThread(QThread):
             objects.append(item)
         
 
-        node_graph = NodeGraph(node_states, group_ids, path_distances, objects)
+        node_graph = NodeGraph(node_states, group_ids, path_distances, objects, graph.outer_for_visgraph)
         
         # sample_count = 8
         sample_count = len(areas.sub_areas)
@@ -221,6 +221,8 @@ class GeneticThread(QThread):
 
         for i in orig_seq:
             areas_nodes.append(areas.sub_areas[i])
+        
+        print(f'node graph looks check: {node_graph}')
 
         node_graph.set_areas(areas_nodes)
 

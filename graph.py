@@ -136,7 +136,7 @@ class GraphData():
         self.width = None
         self.coef = None
         self.angle = None
-        self.genetic_limit = 100
+        self.genetic_limit = 2500
         self.time_limit = 1800
         self.pop_size = 8
         self.genetic_type = 0
@@ -260,7 +260,7 @@ class GraphData():
             line = line.parallel_offset(offset, 'right')
             self.outer = list(line.coords[::-1])
         
-        
+        self.outer_for_visgraph = deepcopy(self.outer)
 
         for index, inner in enumerate(self.inner):
             poly = LinearRing(inner)

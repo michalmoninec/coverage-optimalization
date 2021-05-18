@@ -37,17 +37,17 @@ class ContentWidget(QWidget):
 
         self.startButton = PushButton('Start plot')
         self.previewButton = PushButton('Area preview')
-        self.widthInput = QLineEdit('0.5')
+        self.widthInput = QLineEdit('0,5')
         self.threshInput = QLineEdit('0,1')
         self.angleInput = QLineEdit('135')
 
-        self.geneticIterLimit= QLineEdit('100')
+        self.geneticIterLimit= QLineEdit('2500')
         self.popSize = QLineEdit('8')
         self.timeLimit = QLineEdit('1800')
         self.clusterInitCount = QLineEdit('5')
         self.clusterMaxCount = QLineEdit('8')
 
-        self.geneticType = ComboBox(['GA with elitism', "GA with 2-opt"])
+        self.geneticType = ComboBox(["GA with 2-opt", 'GA with elitism'])
 
         self.stopSimulationWidget = QWidget()
 

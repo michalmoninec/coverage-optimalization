@@ -152,7 +152,7 @@ def swap_2_opt(arr, fitness_func):
     pass
 
 def GA_with_2_opt(population, evo_limit, fitness_func, sol_arr, best_val, solution, start, time_limit, index_arr):
-    # print('Im doint 2-opt type of GA')
+    print('Im doint 2-opt type of GA')
     for i in range(evo_limit):
         i_start = time.time()
         if i_start-start>time_limit:
@@ -242,7 +242,7 @@ def GA_with_2_opt_test(population, evo_limit, fitness_func, sol_arr, best_val, s
 def GA_with_elitism_multi_parents(population, evo_limit, fitness_func, sol_arr, best_val, solution, start, time_limit, index_arr):
 
 
-    # print('Im doint elitism type of GA.')
+    print('Im doint elitism type of GA.')
     for i in range(evo_limit):
         i_start = time.time()
         if i_start-start>time_limit:
@@ -273,14 +273,14 @@ def GA_with_elitism_multi_parents(population, evo_limit, fitness_func, sol_arr, 
         # print(f'next population looks: {population}')
         
         i_end = time.time()
-        # print(f'One iteration of GA lasts: {i_end - i_start} for pop size: {len(population)}')
+        print(f'One iteration of GA lasts: {i_end - i_start} for pop size: {len(population)}')
 
     return solution
 
 def GA_with_elitism_multi_parents_test(population, evo_limit, fitness_func, sol_arr, best_val, solution, start, time_limit, index_arr, s, x, y):
 
 
-    # print('Im doint elitism type of GA.')
+    print('Im doint elitism type of GA.')
     for i in range(evo_limit):
         i_start = time.time()
         if i_start-start>time_limit:
@@ -327,9 +327,9 @@ def run_evolution(genome_len, evo_limit, fitness_func, pop_size, time_limit, gen
     start = time.time()
 
     # solution = GA_with_2_opt(population, evo_limit, fitness_func, sol_arr, best_val, solution)
-    if genetic_type == 0:
+    if genetic_type == 1:
         solution = GA_with_elitism_multi_parents(population, evo_limit, fitness_func, sol_arr, best_val, solution, start, time_limit, index_arr)
-    elif genetic_type == 1:
+    elif genetic_type == 0:
         solution = GA_with_2_opt(population, evo_limit, fitness_func, sol_arr, best_val, solution, start, time_limit, index_arr)
 
 
@@ -355,9 +355,9 @@ def run_evolution_test(genome_len, evo_limit, fitness_func, pop_size, time_limit
     start = time.time()
 
     # solution = GA_with_2_opt(population, evo_limit, fitness_func, sol_arr, best_val, solution)
-    if genetic_type == 0:
+    if genetic_type == 1:
         solution = GA_with_elitism_multi_parents_test(population, evo_limit, fitness_func, sol_arr, best_val, solution, start, time_limit, index_arr, s, x, y)
-    elif genetic_type == 1:
+    elif genetic_type == 0:
         solution = GA_with_2_opt_test(population, evo_limit, fitness_func, sol_arr, best_val, solution, start, time_limit, index_arr, s, x, y)
 
 

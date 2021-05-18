@@ -21,7 +21,7 @@ class Node():
 
 
 class NodeGraph():
-    def __init__(self, node_states, group_ids, path_distances, objects) -> None:
+    def __init__(self, node_states, group_ids, path_distances, objects, obj_outer) -> None:
         super().__init__()
 
         self.move_between_paths = []
@@ -29,7 +29,7 @@ class NodeGraph():
         self.objects = objects
         self.polygons = [Polygon(obj) for obj in objects]
         self.vis_graph = vg.VisGraph()
-        self.get_dist_visibility(objects)
+        self.get_dist_visibility(objects, obj_outer)
         
         self.distance_table = self.set_distance_table(node_states, group_ids)
         self.path_distances = path_distances
@@ -183,11 +183,12 @@ class NodeGraph():
         return val
 
 
-    def get_dist_visibility(self, objects):
+    def get_dist_visibility(self, objects, obj_outer):
         print("Started visibility graph.")
         # start = time.time()
         # print(f'objects before: {objects}')
-        objects2 = [self.wrap_outer_polygon(objects[0])]
+        # objects2 = [self.wrap_outer_polygon(objects[0])]
+        objects2 = [self.wrap_outer_polygon(obj_outer)]
         # objects2 = objects[1:]
         objects2 += objects[1:]
         
@@ -248,13 +249,6 @@ class NodeGraph():
         else:
             point2 = vg.Point(x2,y2)
 
-        # line = LineString([(point1.x, point1.y),(point2.x, point2.y)])
-        # interescts = False
-        # for obj in self.polygons:
-        #     if line.intersects(obj):
-        #         intersects = True
-
-        # if intersects:
         try:
             dist2 = self.vis_graph.shortest_path(point1, point2)
             dist2[0] = vg.Point(x1,y1)
@@ -328,12 +322,12 @@ class NodeGraph():
             sxx = 0
             syy = sy/abs(sy)
         else:
-            print(f'shouldnt be here')
+            pass
 
         # print(f'sxx {sxx}')
         # print(f'syy {syy}')
 
-        d_len = 0.2
+        d_len = 0.3
 
         # if not ccw:
         if sxx>0 and syy>0:
@@ -379,7 +373,7 @@ class NodeGraph():
             if polygon_id == 0:
                 x_d = -x_d
         else:
-            print(f'tady jsem se nemel dostat ombre //////////////////')
+            pass
         
         if ccw:
             x_d = -x_d
@@ -415,9 +409,18 @@ class NodeGraph():
         # print(f'returning id: {id}')
         return id
     
-    def wrap_outer_polygon(self, polygon):        
+    def wrap_outer_polygon(self, polygon):
+        # return polygon
+
         p1 = polygon[-1]
         p2 = polygon[-2]
+        # print(f'polygon 0: {polygon[0]} and polygon last: {polygon[-1]}')
+
+        line_interpolate = LineString([p2,p1])
+        p_t = line_interpolate.interpolate(0.99, normalized=True)
+        # print(f'p1: {p1} ')
+        # print(f'p2: {p2} ')
+        # print(f'p_t : {p_t.x, p_t.y}')
 
         dx = p2[0] - p1[0]
         dy = p2[1] - p1[1]
@@ -430,19 +433,23 @@ class NodeGraph():
         po_x = p1[0] + dxx * 0.05
         po_y = p1[1] + dxy * 0.05
 
+        # polygon.append((p_t.x, p_t.y))
         polygon.append((po_x, po_y))
+
 
         
         line = LineString(polygon)
         poly = LinearRing(polygon)
 
         if poly.is_ccw:
-            offset = line.parallel_offset(1, 'right')
+            offset = line.parallel_offset(2, 'right')
+            coords = list(offset.coords[::-1])
         else:
-            offset = line.parallel_offset(1, 'left')
-        # print(f'offset looks : {list(offset.coords)}')
-        coords = list(offset.coords)
-        polygon += coords[:-1]
+            offset = line.parallel_offset(2, 'left')
+            coords = list(offset.coords)
+        polygon += coords[::-1]
+        polygon.append(polygon[0])
+        print(f'polygon mcgyver looks: {polygon}')
 
         return polygon
 

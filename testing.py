@@ -95,7 +95,7 @@ def main():
 
         genetic_iter_limit = 5000
         sizes = [4, 8, 16, 32, 64]
-        genetic_time_limit = 2500
+        genetic_time_limit = 1800
         
         # 0 - elitism, 1 - 2-opt
         genetic_type = method
