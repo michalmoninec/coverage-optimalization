@@ -11,7 +11,8 @@ from shapely.ops import nearest_points
 
 import matplotlib.pyplot as plt
 
-class Node():
+
+class Node:
     def __init__(self, state, length) -> None:
         super().__init__()
         self.state = state
@@ -20,8 +21,10 @@ class Node():
         self.parent = None
 
 
-class NodeGraph():
-    def __init__(self, node_states, group_ids, path_distances, objects, obj_outer) -> None:
+class NodeGraph:
+    def __init__(
+        self, node_states, group_ids, path_distances, objects, obj_outer
+    ) -> None:
         super().__init__()
 
         self.move_between_paths = []
@@ -30,13 +33,13 @@ class NodeGraph():
         self.polygons = [Polygon(obj) for obj in objects]
         self.vis_graph = vg.VisGraph()
         self.get_dist_visibility(objects, obj_outer)
-        
+
         self.distance_table = self.set_distance_table(node_states, group_ids)
         self.path_distances = path_distances
         self.node_states = node_states
-        
-    def get_exact_solution(self,areas_nodes, sample_count):
-        multiple_seq = list(itertools.permutations(areas_nodes,sample_count))
+
+    def get_exact_solution(self, areas_nodes, sample_count):
+        multiple_seq = list(itertools.permutations(areas_nodes, sample_count))
         val_g = math.inf
         val_max = 0
         seq_g = None
@@ -65,7 +68,7 @@ class NodeGraph():
                     column.append(None)
                     m_column.append(None)
                 else:
-                    val, path = (self.get_distance(node_states[i], node_states[j]))
+                    val, path = self.get_distance(node_states[i], node_states[j])
                     column.append(val)
                     m_column.append(path)
                     # column.append(self.get_distance(node_states[i], node_states[j]))
@@ -73,25 +76,22 @@ class NodeGraph():
             move_paths.append(m_column)
         self.move_between_paths = move_paths
         end = time.time()
-        print(f'Time for vis graph : {end - start}')
+        print(f"Time for vis graph : {end - start}")
         return distance_table
 
     def compute_path_len(self, points):
         dist = 0
-        for i in range(len(points)-1):
+        for i in range(len(points) - 1):
             current = points[i]
-            next = points[i+1]
-            x1,y1 = current.x,current.y
-            x2,y2 = next.x,next.y
+            next = points[i + 1]
+            x1, y1 = current.x, current.y
+            x2, y2 = next.x, next.y
             x_diff = x2 - x1
             y_diff = y2 - y1
 
-            diff = math.sqrt(x_diff*x_diff + y_diff*y_diff)
+            diff = math.sqrt(x_diff * x_diff + y_diff * y_diff)
             dist += diff
         return dist
-
-
-
 
     def create_nodes(self, areas_nodes):
         graph_nodes = []
@@ -117,15 +117,21 @@ class NodeGraph():
             node = node_groups[0][i]
             node.val = node.len
 
-        for i in range(len(node_groups)-1):
+        for i in range(len(node_groups) - 1):
             nodes_current = node_groups[i]
-            nodes_next = node_groups[i+1]
+            nodes_next = node_groups[i + 1]
 
             for j in range(len(nodes_next)):
                 node_next_iter = nodes_next[j]
                 for k in range(len(nodes_current)):
                     node_current_iter = nodes_current[k]
-                    val_iter = node_current_iter.val + node_next_iter.len + self.get_distance_from_table(node_current_iter.state, node_next_iter.state)
+                    val_iter = (
+                        node_current_iter.val
+                        + node_next_iter.len
+                        + self.get_distance_from_table(
+                            node_current_iter.state, node_next_iter.state
+                        )
+                    )
                     # print(f'current value of distance and previous state: {val_iter}')
                     if val_iter < node_next_iter.val:
                         node_next_iter.val = val_iter
@@ -154,7 +160,7 @@ class NodeGraph():
         while node_next.parent:
             node_sequence.append(node_next.parent)
             node_next = node_next.parent
-            
+
         return node_sequence[::-1], min_val_node.val
 
     def get_value(self, seq):
@@ -171,17 +177,16 @@ class NodeGraph():
     def get_value_fitness(self, seq):
         start = time.time()
         seq = [self.areas[i] for i in seq]
-        
+
         self.create_nodes(seq)
-        
+
         self.assign_values()
-        
+
         sequence, val = self.get_shortest_path()
         # print(f'sequence {sequence}, val: {val}')
         end = time.time()
         # print(f'Time for fitness function: {end-start}')
         return val
-
 
     def get_dist_visibility(self, objects, obj_outer):
         print("Started visibility graph.")
@@ -191,7 +196,7 @@ class NodeGraph():
         objects2 = [self.wrap_outer_polygon(obj_outer)]
         # objects2 = objects[1:]
         objects2 += objects[1:]
-        
+
         # print(f'objects after: {objects2}')
 
         polys = []
@@ -199,14 +204,12 @@ class NodeGraph():
             col = []
             for i in range(len(poly)):
                 point = poly[i]
-                col.append(vg.Point(round(point[0],1),round(point[1],1)))
+                col.append(vg.Point(round(point[0], 1), round(point[1], 1)))
                 # col.append(vg.Point(point[0],point[1]))
             polys.append(col)
         # print(f'polys for visgraph: {polys}')
 
         self.vis_graph.build(polys, status=False)
-
-
 
         end = time.time()
         # print(f'Time needed to crate vis graph: {end-start}')
@@ -221,38 +224,37 @@ class NodeGraph():
 
         x_diff = x2 - x1
         y_diff = y2 - y1
-        
 
         # pokud jde videt pocitam euclid, jinak visibility graph
-        dist = math.sqrt(x_diff*x_diff + y_diff*y_diff)
-        
+        dist = math.sqrt(x_diff * x_diff + y_diff * y_diff)
+
         # PART FOR VISIBILITY PATH
         dist2 = None
-        
-        point1 = Point(x1,y1)
-        point2 = Point(x2,y2)
+
+        point1 = Point(x1, y1)
+        point2 = Point(x2, y2)
 
         id1 = self.get_closest_polygon(point1)
         id2 = self.get_closest_polygon(point2)
 
         if id1 != None:
-            new_point_1, coords1 = self.move_point_from_polygon([x1,y1], id1)
+            new_point_1, coords1 = self.move_point_from_polygon([x1, y1], id1)
             point1 = vg.Point(new_point_1[0], new_point_1[1])
             # print('Updated point1')
         else:
-            point1 = vg.Point(x1,y1)
+            point1 = vg.Point(x1, y1)
 
         if id2 != None:
-            new_point_2, coords2 = self.move_point_from_polygon([x2,y2], id2)
-            point2 = vg.Point(new_point_2[0],new_point_2[1])
+            new_point_2, coords2 = self.move_point_from_polygon([x2, y2], id2)
+            point2 = vg.Point(new_point_2[0], new_point_2[1])
             # print('Updated point2')
         else:
-            point2 = vg.Point(x2,y2)
+            point2 = vg.Point(x2, y2)
 
         try:
             dist2 = self.vis_graph.shortest_path(point1, point2)
-            dist2[0] = vg.Point(x1,y1)
-            dist2[-1] = vg.Point(x2,y2)
+            dist2[0] = vg.Point(x1, y1)
+            dist2[-1] = vg.Point(x2, y2)
         except Exception as e:
             print(e)
             pass
@@ -263,35 +265,34 @@ class NodeGraph():
         else:
             x_diff = x2 - x1
             y_diff = y2 - y1
-            dist = math.sqrt(x_diff*x_diff + y_diff*y_diff)
+            dist = math.sqrt(x_diff * x_diff + y_diff * y_diff)
             self.move_between_paths.append([point1, point2])
             return dist, [point1, point2]
 
-        #PART FOR EUCLID DIFFERENCIES
-        return dist, [vg.Point(x1,y1),vg.Point(x2,y2)]
+        # PART FOR EUCLID DIFFERENCIES
+        return dist, [vg.Point(x1, y1), vg.Point(x2, y2)]
 
     def move_point_from_polygon(self, point_in, polygon_id):
         # print(f'objects in move function : {len(self.objects)}')
 
-
         polygon = self.objects[polygon_id]
         # print(f'point In : {point_in}')
-        point = Point(point_in[0],point_in[1])
+        point = Point(point_in[0], point_in[1])
         # print(f'polygon: {polygon}')
         line_strings = []
         linear_ring = LinearRing(polygon)
-        
-        for i in range(len(polygon)-1):
+
+        for i in range(len(polygon) - 1):
             curr = polygon[i]
-            next = polygon[i+1]
-            line_strings.append(LineString([(curr[0], curr[1]),(next[0], next[1])]))
+            next = polygon[i + 1]
+            line_strings.append(LineString([(curr[0], curr[1]), (next[0], next[1])]))
 
         ccw = linear_ring.is_ccw
-        
+
         distance = math.inf
         closest_line = None
         for line in line_strings:
-            if line.distance(point)<distance:
+            if line.distance(point) < distance:
                 closest_line = line
                 distance = line.distance(point)
 
@@ -313,14 +314,14 @@ class NodeGraph():
         sy = y2 - y1
 
         if sx and sy:
-            sxx = sx/abs(sx)
-            syy = sy/abs(sy)
-        elif sx and sy==0:
+            sxx = sx / abs(sx)
+            syy = sy / abs(sy)
+        elif sx and sy == 0:
             syy = 0
-            sxx = sx/abs(sx)
+            sxx = sx / abs(sx)
         elif sx == 0 and sy:
             sxx = 0
-            syy = sy/abs(sy)
+            syy = sy / abs(sy)
         else:
             pass
 
@@ -330,64 +331,63 @@ class NodeGraph():
         d_len = 0.3
 
         # if not ccw:
-        if sxx>0 and syy>0:
+        if sxx > 0 and syy > 0:
             norm = [-1, 1]
             if polygon_id == 0:
                 norm = [i * -1 for i in norm]
-            angle = math.atan(abs(sy)/abs(sx))
+            angle = math.atan(abs(sy) / abs(sx))
             # print(f'angle: {math.degrees(angle)}')
-            x_d = math.sin(angle)*d_len*norm[0]
-            y_d = math.cos(angle)*d_len*norm[1]
-        elif sxx>0 and syy<0:
+            x_d = math.sin(angle) * d_len * norm[0]
+            y_d = math.cos(angle) * d_len * norm[1]
+        elif sxx > 0 and syy < 0:
             norm = [1, 1]
             if polygon_id == 0:
                 norm = [i * -1 for i in norm]
-            angle = math.atan(abs(sy)/abs(sx))
+            angle = math.atan(abs(sy) / abs(sx))
             # print(f'angle: {math.degrees(angle)}')
-            x_d = math.sin(angle)*d_len*norm[0]
-            y_d = math.cos(angle)*d_len*norm[1]
-        elif sxx<0 and syy<0:
+            x_d = math.sin(angle) * d_len * norm[0]
+            y_d = math.cos(angle) * d_len * norm[1]
+        elif sxx < 0 and syy < 0:
             norm = [1, -1]
             if polygon_id == 0:
                 norm = [i * -1 for i in norm]
-            angle = math.atan(abs(sy)/abs(sx))
+            angle = math.atan(abs(sy) / abs(sx))
             # print(f'angle: {math.degrees(angle)}')
-            x_d = math.sin(angle)*d_len*norm[0]
-            y_d = math.cos(angle)*d_len*norm[1]
-        elif sxx<0 and syy>0:
+            x_d = math.sin(angle) * d_len * norm[0]
+            y_d = math.cos(angle) * d_len * norm[1]
+        elif sxx < 0 and syy > 0:
             norm = [-1, -1]
             if polygon_id == 0:
                 norm = [i * -1 for i in norm]
-            angle = math.atan(abs(sx)/abs(sy))
+            angle = math.atan(abs(sx) / abs(sy))
             # print(f'angle: {math.degrees(angle)}')
-            x_d = math.cos(angle)*d_len*norm[0]
-            y_d = math.sin(angle)*d_len*norm[1]
-        elif sxx==0 and syy:
+            x_d = math.cos(angle) * d_len * norm[0]
+            y_d = math.sin(angle) * d_len * norm[1]
+        elif sxx == 0 and syy:
             x_d = 0
-            y_d = d_len*syy
+            y_d = d_len * syy
             if polygon_id == 0:
                 y_d = -y_d
-        elif syy==0 and sxx:
+        elif syy == 0 and sxx:
             y_d = 0
-            x_d = d_len*sxx
+            x_d = d_len * sxx
             if polygon_id == 0:
                 x_d = -x_d
         else:
             pass
-        
+
         if ccw:
             x_d = -x_d
             y_d = -y_d
 
-        new_point = [round(point_in[0]+x_d,2), round(point_in[1]+y_d,2)]
-
+        new_point = [round(point_in[0] + x_d, 2), round(point_in[1] + y_d, 2)]
 
         return new_point, coords
 
     def get_closest_polygon(self, point):
         distance = math.inf
         # print(f' polygons looks: {self.polygons}')
-        #neberu prvni protoze vzdalenost kdyz je bod uvnitr polygonu je nulova
+        # neberu prvni protoze vzdalenost kdyz je bod uvnitr polygonu je nulova
         polygons = self.polygons[1:]
         # polygons = self.polygons
         # print(f'polygons are: {self.objects[1:]}')
@@ -395,20 +395,19 @@ class NodeGraph():
         id = None
         crit = 0.1
 
-
         for index, polygon in enumerate(polygons):
-            if polygon.distance(point)<distance:
+            if polygon.distance(point) < distance:
                 pol_out = polygon
                 distance = polygon.distance(point)
                 # print(f'distance: {distance} and index: {index}')
-        
-        if distance<crit:
+
+        if distance < crit:
             id = polygons.index(pol_out) + 1
         else:
             id = 0
         # print(f'returning id: {id}')
         return id
-    
+
     def wrap_outer_polygon(self, polygon):
         # return polygon
 
@@ -416,7 +415,7 @@ class NodeGraph():
         p2 = polygon[-2]
         # print(f'polygon 0: {polygon[0]} and polygon last: {polygon[-1]}')
 
-        line_interpolate = LineString([p2,p1])
+        line_interpolate = LineString([p2, p1])
         p_t = line_interpolate.interpolate(0.99, normalized=True)
         # print(f'p1: {p1} ')
         # print(f'p2: {p2} ')
@@ -425,8 +424,8 @@ class NodeGraph():
         dx = p2[0] - p1[0]
         dy = p2[1] - p1[1]
 
-        dxx = dx/abs(dx)
-        dxy = dy/abs(dy)
+        dxx = dx / abs(dx)
+        dxy = dy / abs(dy)
 
         polygon.pop()
 
@@ -436,28 +435,17 @@ class NodeGraph():
         # polygon.append((p_t.x, p_t.y))
         polygon.append((po_x, po_y))
 
-
-        
         line = LineString(polygon)
         poly = LinearRing(polygon)
 
         if poly.is_ccw:
-            offset = line.parallel_offset(2, 'right')
+            offset = line.parallel_offset(2, "right")
             coords = list(offset.coords[::-1])
         else:
-            offset = line.parallel_offset(2, 'left')
+            offset = line.parallel_offset(2, "left")
             coords = list(offset.coords)
         polygon += coords[::-1]
         polygon.append(polygon[0])
-        print(f'polygon mcgyver looks: {polygon}')
+        print(f"polygon mcgyver looks: {polygon}")
 
         return polygon
-
-
-       
-
-        
-
-
-
-
