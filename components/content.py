@@ -1,14 +1,34 @@
 from graph import GraphData
 from paralel_tracks import ParalelTracks
+
 # from components.infoTable import InfoTable
 from components.pushButton import PushButton
 from components.comboBox import ComboBox
 from components.header import HeaderWidget
 
 from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QFileDialog, \
-    QVBoxLayout, QWidget, QHBoxLayout, QMessageBox, QFrame, QRadioButton, QStackedWidget, \
-    QStackedLayout, QLabel, QSizePolicy, QGraphicsDropShadowEffect, QGroupBox, QFormLayout, QLineEdit, QComboBox, QSpinBox
+from PyQt5.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QDesktopWidget,
+    QFileDialog,
+    QVBoxLayout,
+    QWidget,
+    QHBoxLayout,
+    QMessageBox,
+    QFrame,
+    QRadioButton,
+    QStackedWidget,
+    QStackedLayout,
+    QLabel,
+    QSizePolicy,
+    QGraphicsDropShadowEffect,
+    QGroupBox,
+    QFormLayout,
+    QLineEdit,
+    QComboBox,
+    QSpinBox,
+)
 from PyQt5.QtCore import QPersistentModelIndex, Qt, QTimer, QRegExp
 from PyQt5.QtGui import QIcon, QIntValidator, QDoubleValidator, QRegExpValidator
 
@@ -21,6 +41,7 @@ import numpy as np
 from copy import deepcopy
 
 from hirearchial_clustering import hierarichial_cluster as cluster
+
 
 class ContentWidget(QWidget):
     def __init__(self, parent=None):
@@ -35,55 +56,57 @@ class ContentWidget(QWidget):
         self.settingsMenu = QWidget()
         self.advancedOptions = QWidget()
 
-        self.startButton = PushButton('Start plot')
-        self.previewButton = PushButton('Area preview')
-        self.widthInput = QLineEdit('0,5')
-        self.threshInput = QLineEdit('0,1')
-        self.angleInput = QLineEdit('135')
+        self.startButton = PushButton("Start plot")
+        self.previewButton = PushButton("Area preview")
+        self.widthInput = QLineEdit("0,5")
+        self.threshInput = QLineEdit("0,1")
+        self.angleInput = QLineEdit("135")
 
-        self.geneticIterLimit= QLineEdit('2500')
-        self.popSize = QLineEdit('8')
-        self.timeLimit = QLineEdit('1800')
-        self.clusterInitCount = QLineEdit('5')
-        self.clusterMaxCount = QLineEdit('8')
+        self.geneticIterLimit = QLineEdit("2500")
+        self.popSize = QLineEdit("8")
+        self.timeLimit = QLineEdit("1800")
+        self.clusterInitCount = QLineEdit("5")
+        self.clusterMaxCount = QLineEdit("8")
 
-        self.geneticType = ComboBox(["GA with 2-opt", 'GA with elitism'])
+        self.geneticType = ComboBox(["GA with 2-opt", "GA with elitism"])
 
         self.stopSimulationWidget = QWidget()
 
-        self.stopButton = PushButton('Stop simulation')
-        self.loadingBar = QLabel('Loading...')
+        self.stopButton = PushButton("Stop simulation")
+        self.loadingBar = QLabel("Loading...")
 
-        self.areaPreview = PushButton('Area preview')
+        self.areaPreview = PushButton("Area preview")
 
-        self.calculateGA = PushButton('Compute only new GA solution')
-
-        
+        self.calculateGA = PushButton("Compute only new GA solution")
 
         self.build()
 
     def build(self):
         layout = QVBoxLayout()
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         graphWrapperLayout = QVBoxLayout()
-        graphWrapperLayout.setContentsMargins(0,0,0,0)
+        graphWrapperLayout.setContentsMargins(0, 0, 0, 0)
 
-        graphLabel = QLabel('Visualization of the computed area:')
-        graphLabel.setContentsMargins(10,0,0,0)
-        graphLabel.setStyleSheet('''
+        graphLabel = QLabel("Visualization of the computed area:")
+        graphLabel.setContentsMargins(10, 0, 0, 0)
+        graphLabel.setStyleSheet(
+            """
         font-size: 15px;
-        ''')
+        """
+        )
 
         # self.graphWidget.setAspectLocked()
-        self.graphWidget.getPlotItem().hideAxis('bottom')
-        self.graphWidget.getPlotItem().hideAxis('left')
+        self.graphWidget.getPlotItem().hideAxis("bottom")
+        self.graphWidget.getPlotItem().hideAxis("left")
         self.graphWidget.setMenuEnabled(False)
-        self.graphWidget.setStyleSheet('''
+        self.graphWidget.setStyleSheet(
+            """
         border-top: 5px solid darkgray;
-        ''')
+        """
+        )
         self.graphWidget.setBackground(None)
-        self.graphWidget.setContentsMargins(0,0,0,0)
+        self.graphWidget.setContentsMargins(0, 0, 0, 0)
 
         # self.graphWidget2.getPlotItem().hideAxis('bottom')
         # self.graphWidget2.getPlotItem().hideAxis('left')
@@ -93,7 +116,6 @@ class ContentWidget(QWidget):
         # ''')
         # self.graphWidget2.setBackground(None)
         # self.graphWidget2.setContentsMargins(0,0,0,0)
-
 
         graphWrapperLayout.addWidget(graphLabel)
         graphWrapperLayout.addWidget(self.graphWidget)
@@ -122,7 +144,7 @@ class ContentWidget(QWidget):
         self.widthInput.setAlignment(Qt.AlignHCenter)
 
         reg_ex = QRegExp("[0]+[,]+[0-9]{,2}")
-        threshValidator = QRegExpValidator(reg_ex,self.threshInput)
+        threshValidator = QRegExpValidator(reg_ex, self.threshInput)
         self.threshInput.setValidator(threshValidator)
         self.threshInput.setAlignment(Qt.AlignHCenter)
 
@@ -131,16 +153,17 @@ class ContentWidget(QWidget):
         self.angleInput.setValidator(angleValidator)
         self.angleInput.setAlignment(Qt.AlignHCenter)
 
-
         formLayout.addRow(QLabel("Angle [Deg (0-180)]:"), self.angleInput)
         formLayout.addRow(QLabel("Width [m]:"), self.widthInput)
-        
+
         formGroupBox.setLayout(formLayout)
-        formGroupBox.setStyleSheet('''
+        formGroupBox.setStyleSheet(
+            """
         background: darkgrey;
         border-radius: 10px;
         font-size: 15px;
-        ''')
+        """
+        )
 
         self.geneticIterLimit.setValidator(intValidator)
         self.geneticIterLimit.setAlignment(Qt.AlignHCenter)
@@ -162,11 +185,13 @@ class ContentWidget(QWidget):
         advancedFormLayout.addRow(QLabel("Time limit for GA:"), self.timeLimit)
 
         advancedGroupBox.setLayout(advancedFormLayout)
-        advancedGroupBox.setStyleSheet('''
+        advancedGroupBox.setStyleSheet(
+            """
         background: darkgrey;
         border-radius: 10px;
         font-size: 15px;
-        ''')
+        """
+        )
 
         advancedSettingsLayout.addStretch(1)
         advancedSettingsLayout.addWidget(self.geneticType, alignment=Qt.AlignHCenter)
@@ -179,7 +204,6 @@ class ContentWidget(QWidget):
 
         self.advancedOptions.setLayout(advancedSettingsWrapperLayout)
 
-
         settingsLayout.addStretch(1)
         settingsLayout.addWidget(self.advancedOptions, alignment=Qt.AlignHCenter)
         settingsLayout.addWidget(formGroupBox)
@@ -188,8 +212,7 @@ class ContentWidget(QWidget):
         settingsLayout.addStretch(1)
 
         self.calculateGA.hide()
-        self.calculateGA.setFixedSize(250,30)
-
+        self.calculateGA.setFixedSize(250, 30)
 
         settingsWrapperLayout.addStretch(1)
         settingsWrapperLayout.addLayout(settingsLayout)
@@ -203,23 +226,17 @@ class ContentWidget(QWidget):
         stopSimulationLayout.addWidget(self.stopButton)
         stopSimulationLayout.addStretch(1)
 
-
         stopSimulationLayoutWrapper.addStretch(1)
         stopSimulationLayoutWrapper.addLayout(stopSimulationLayout)
         stopSimulationLayoutWrapper.addStretch(1)
 
-        
         self.stopSimulationWidget.setLayout(stopSimulationLayoutWrapper)
-
-
 
         self.contentStack.addWidget(self.settingsMenu)
         self.contentStack.addWidget(self.graphWrapper)
         self.contentStack.addWidget(self.stopSimulationWidget)
         # self.contentStack.addWidget(self.advancedOptions)
 
-
         layout.addWidget(self.contentStack)
 
         self.setLayout(layout)
-
