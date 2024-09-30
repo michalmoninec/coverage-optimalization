@@ -82,7 +82,8 @@ class ParalelTracks:
                 if line.intersection(outer).geom_type == "LineString":
                     intersected_points.append(list(line.intersection(outer).coords))
                 elif line.intersection(outer).geom_type == "MultiLineString":
-                    for item in line.intersection(outer):
+                    for item in line.intersection(outer).geoms:
+                        print(item)
                         intersected_points.append(list(item.coords))
                     # print(f"multiple intersections first item: {line.intersection(outer)[0]}")
                     # intersected_points = []
@@ -173,7 +174,7 @@ class ParalelTracks:
                             # print("----------------------------------")
                             # print(f"number of lines: {len(splitted)}")
 
-                            for index, lin in enumerate(splitted):
+                            for lin in splitted.geoms:
                                 # print(f"index of lin:{index}")
 
                                 contains = False

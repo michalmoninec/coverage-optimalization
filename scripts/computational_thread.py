@@ -132,6 +132,7 @@ class ClusteringThread(QThread):
             arr.append((tracks.upper[i].point))
             input_arr.append([tracks.upper[i].point[0], tracks.upper[i].point[1]])
 
+        print(f"input arr: {input_arr}")
         clusters, clusters_count, centers = xmeans_clustering(input_arr)
 
         objects = [graph.outer]
